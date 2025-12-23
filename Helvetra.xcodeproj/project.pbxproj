@@ -7,18 +7,28 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		0858718AF43BE73B66A915A5 /* Spacing.swift in Sources */ = {isa = PBXBuildFile; fileRef = 56B7D16E1976F7BC61590D37 /* Spacing.swift */; };
 		1E1CC867E7C17307EF17E494 /* HelvetraApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC9E1D0A855A0F75AE0D99C3 /* HelvetraApp.swift */; };
+		3F060B44879615D27E9D769E /* GlassEffect.swift in Sources */ = {isa = PBXBuildFile; fileRef = ED576CDF08E6F109DF5F1933 /* GlassEffect.swift */; };
 		61802848B42C827A248D96CC /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1E204EB1315013CEBDE3EE5C /* ContentView.swift */; };
+		866964C9587E172BC26307D7 /* Typography.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8D7B5486AF50F164D79D5983 /* Typography.swift */; };
 		ACE03DF3F4BD058D596820CB /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = ACB54CA0202FACCE83BF8B4C /* Assets.xcassets */; };
+		B997A0E9D5477DA833E45D95 /* Theme.swift in Sources */ = {isa = PBXBuildFile; fileRef = 848DC17344860A13B6D91886 /* Theme.swift */; };
+		B9B09AAE22BE58AD54DCF05E /* Colors.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6FE96AD20ED07BA62B746623 /* Colors.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
 		1E204EB1315013CEBDE3EE5C /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
+		56B7D16E1976F7BC61590D37 /* Spacing.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Spacing.swift; sourceTree = "<group>"; };
+		6FE96AD20ED07BA62B746623 /* Colors.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Colors.swift; sourceTree = "<group>"; };
+		848DC17344860A13B6D91886 /* Theme.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Theme.swift; sourceTree = "<group>"; };
 		8AFBDED448017D2FCF0705E6 /* Helvetra.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = Helvetra.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		8D7B5486AF50F164D79D5983 /* Typography.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Typography.swift; sourceTree = "<group>"; };
 		ACB54CA0202FACCE83BF8B4C /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		D42A59DC879D543CBCBA709F /* Helvetra.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Helvetra.entitlements; sourceTree = "<group>"; };
 		DC9E1D0A855A0F75AE0D99C3 /* HelvetraApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HelvetraApp.swift; sourceTree = "<group>"; };
 		E52800E38DDA407998236848 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
+		ED576CDF08E6F109DF5F1933 /* GlassEffect.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GlassEffect.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXGroup section */
@@ -62,6 +72,18 @@
 			path = App;
 			sourceTree = "<group>";
 		};
+		BA27061CE8E749389A8596F9 /* DesignSystem */ = {
+			isa = PBXGroup;
+			children = (
+				DEF30822AB462CCA77A8C6E2 /* Effects */,
+				6FE96AD20ED07BA62B746623 /* Colors.swift */,
+				56B7D16E1976F7BC61590D37 /* Spacing.swift */,
+				848DC17344860A13B6D91886 /* Theme.swift */,
+				8D7B5486AF50F164D79D5983 /* Typography.swift */,
+			);
+			path = DesignSystem;
+			sourceTree = "<group>";
+		};
 		C555DFAE7F629788D816A359 = {
 			isa = PBXGroup;
 			children = (
@@ -74,6 +96,7 @@
 			isa = PBXGroup;
 			children = (
 				B31D19F7771C9DE0F8185E97 /* App */,
+				BA27061CE8E749389A8596F9 /* DesignSystem */,
 				52B62AA4CEDBB06BCD60A686 /* Models */,
 				A5FD80900F9D5562AD89B791 /* Resources */,
 				532D8E274857C282E25476AF /* Services */,
@@ -89,6 +112,14 @@
 				8AFBDED448017D2FCF0705E6 /* Helvetra.app */,
 			);
 			name = Products;
+			sourceTree = "<group>";
+		};
+		DEF30822AB462CCA77A8C6E2 /* Effects */ = {
+			isa = PBXGroup;
+			children = (
+				ED576CDF08E6F109DF5F1933 /* GlassEffect.swift */,
+			);
+			path = Effects;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -162,8 +193,13 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				B9B09AAE22BE58AD54DCF05E /* Colors.swift in Sources */,
 				61802848B42C827A248D96CC /* ContentView.swift in Sources */,
+				3F060B44879615D27E9D769E /* GlassEffect.swift in Sources */,
 				1E1CC867E7C17307EF17E494 /* HelvetraApp.swift in Sources */,
+				0858718AF43BE73B66A915A5 /* Spacing.swift in Sources */,
+				B997A0E9D5477DA833E45D95 /* Theme.swift in Sources */,
+				866964C9587E172BC26307D7 /* Typography.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
