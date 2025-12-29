@@ -275,10 +275,26 @@ struct ContentView: View {
 
     /// Sync local settings to ViewModel before translation.
     private func syncViewModelSettings() {
+        migrateDialectIfNeeded()
         viewModel.sourceLang = selectedSourceLanguage
         viewModel.targetLang = selectedTargetLanguage
         viewModel.formality = selectedFormality
         viewModel.dialect = selectedDialect
+    }
+
+    /// Migrate old dialect display names to API codes.
+    private func migrateDialectIfNeeded() {
+        let migrations: [String: String] = [
+            "Zürich": "zurich",
+            "Bern": "bern",
+            "Basel": "basel",
+            "Luzern": "luzern",
+            "St. Gallen": "stgallen",
+            "Graubünden": "wallis",
+        ]
+        if let newCode = migrations[selectedDialect] {
+            selectedDialect = newCode
+        }
     }
 
     /// Paste text from clipboard.
