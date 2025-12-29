@@ -1,5 +1,6 @@
-import SwiftUI
+import AuthenticationServices
 import StoreKit
+import SwiftUI
 
 // MARK: - Store Service
 
@@ -1028,7 +1029,9 @@ struct PlanCard: View {
 struct SettingsView: View {
     @Binding var hapticsEnabled: Bool
     @ObservedObject private var storeService = StoreService.shared
+    @ObservedObject private var authService = AuthService.shared
     @State private var showSubscription: Bool = false
+    @State private var showDeleteConfirmation: Bool = false
 
     private var appVersion: String {
         Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "1.0"
@@ -1056,26 +1059,80 @@ struct SettingsView: View {
 
                 // Account section
                 SettingsSection(title: "Account") {
-                    SettingsRow(
-                        icon: "person.circle",
-                        title: "\(storeService.currentTier.rawValue) Plan",
-                        subtitle: tierDescription
-                    )
+                    if authService.isAuthenticated, let user = authService.currentUser {
+                        // Signed in state
+                        SettingsRow(
+                            icon: "person.circle.fill",
+                            title: user.email,
+                            subtitle: "\(storeService.currentTier.rawValue) Plan"
+                        )
 
-                    if storeService.currentTier == .free {
-                        Button(action: { showSubscription = true }) {
+                        if storeService.currentTier == .free {
+                            Button(action: { showSubscription = true }) {
+                                HStack {
+                                    Image(systemName: "arrow.up.circle.fill")
+                                        .foregroundStyle(Colors.swissRed)
+                                    Text("Upgrade to Helvetra+")
+                                        .font(Typography.bodyMedium)
+                                        .foregroundStyle(Colors.swissRed)
+                                    Spacer()
+                                    Image(systemName: "chevron.right")
+                                        .font(.system(size: 12, weight: .semibold))
+                                        .foregroundStyle(Colors.textSecondaryAdaptive)
+                                }
+                                .padding(.vertical, Spacing.xs)
+                            }
+                        }
+
+                        Button(action: {
+                            Task { await authService.signOut() }
+                        }) {
                             HStack {
-                                Image(systemName: "arrow.up.circle.fill")
-                                    .foregroundStyle(Colors.swissRed)
-                                Text("Upgrade to Pro")
-                                    .font(Typography.bodyMedium)
-                                    .foregroundStyle(Colors.swissRed)
-                                Spacer()
-                                Image(systemName: "chevron.right")
-                                    .font(.system(size: 12, weight: .semibold))
+                                Image(systemName: "rectangle.portrait.and.arrow.right")
                                     .foregroundStyle(Colors.textSecondaryAdaptive)
+                                Text("Sign Out")
+                                    .font(Typography.bodyMedium)
+                                    .foregroundStyle(Colors.textPrimaryAdaptive)
+                                Spacer()
                             }
                             .padding(.vertical, Spacing.xs)
+                        }
+                    } else {
+                        // Signed out state
+                        SettingsRow(
+                            icon: "person.circle",
+                            title: "\(storeService.currentTier.rawValue) Plan",
+                            subtitle: tierDescription
+                        )
+
+                        SignInWithAppleButton(.signIn, onRequest: { request in
+                            request.requestedScopes = [.email, .fullName]
+                        }, onCompletion: { _ in })
+                        .frame(height: 50)
+                        .cornerRadius(Spacing.buttonRadius)
+                        .overlay {
+                            // Custom tap handler since SwiftUI's completion doesn't work well
+                            Color.clear
+                                .contentShape(Rectangle())
+                                .onTapGesture {
+                                    Task {
+                                        do {
+                                            try await authService.signInWithApple()
+                                            HapticService.success()
+                                        } catch {
+                                            authService.errorMessage = error.localizedDescription
+                                        }
+                                    }
+                                }
+                        }
+                        .disabled(authService.isLoading)
+                        .opacity(authService.isLoading ? 0.6 : 1.0)
+
+                        if let error = authService.errorMessage {
+                            Text(error)
+                                .font(Typography.caption)
+                                .foregroundStyle(.red)
+                                .padding(.top, Spacing.xs)
                         }
                     }
                 }
@@ -1121,6 +1178,23 @@ struct SettingsView: View {
                     }
                 }
 
+                // Danger zone (only for authenticated users)
+                if authService.isAuthenticated {
+                    SettingsSection(title: "Danger Zone") {
+                        Button(action: { showDeleteConfirmation = true }) {
+                            HStack {
+                                Image(systemName: "trash")
+                                    .foregroundStyle(.red)
+                                Text("Delete Account")
+                                    .font(Typography.bodyMedium)
+                                    .foregroundStyle(.red)
+                                Spacer()
+                            }
+                            .padding(.vertical, Spacing.xs)
+                        }
+                    }
+                }
+
                 // Footer
                 VStack(spacing: Spacing.xs) {
                     Text("Made with ❤️ in Switzerland")
@@ -1133,6 +1207,25 @@ struct SettingsView: View {
         }
         .sheet(isPresented: $showSubscription) {
             SubscriptionView()
+        }
+        .confirmationDialog(
+            "Delete Account",
+            isPresented: $showDeleteConfirmation,
+            titleVisibility: .visible
+        ) {
+            Button("Delete Account", role: .destructive) {
+                Task {
+                    do {
+                        try await authService.deleteAccount()
+                        HapticService.success()
+                    } catch {
+                        authService.errorMessage = error.localizedDescription
+                    }
+                }
+            }
+            Button("Cancel", role: .cancel) {}
+        } message: {
+            Text("This will permanently delete your account and all associated data. This action cannot be undone.")
         }
     }
 }
@@ -1371,6 +1464,11 @@ actor TranslationService {
         urlRequest.httpMethod = "POST"
         urlRequest.setValue("application/json", forHTTPHeaderField: "Content-Type")
         urlRequest.httpBody = try JSONEncoder().encode(request)
+
+        // Include auth token for authenticated users (enables usage tracking)
+        if let accessToken = await AuthService.shared.getAccessToken() {
+            urlRequest.setValue("Bearer \(accessToken)", forHTTPHeaderField: "Authorization")
+        }
 
         let (data, response) = try await session.data(for: urlRequest)
 
