@@ -11,6 +11,11 @@ public enum Typography {
     /// Medium display text.
     public static let displayMedium = Font.system(size: 28, weight: .bold, design: .default)
 
+    // MARK: - Translation
+
+    /// Translation text in source/target areas.
+    public static let translationText = Font.system(size: 28, weight: .regular, design: .default)
+
     // MARK: - Headings
 
     /// Primary heading (screen titles).

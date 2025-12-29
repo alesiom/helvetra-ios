@@ -75,7 +75,7 @@ public struct GlassButtonStyle: ButtonStyle {
             .padding(.vertical, Spacing.sm)
             .frame(minHeight: Spacing.minTouchTarget)
             .background {
-                RoundedRectangle(cornerRadius: Spacing.pillRadius, style: .continuous)
+                RoundedRectangle(cornerRadius: Spacing.buttonRadius, style: .continuous)
                     .fill(.thinMaterial)
             }
             .opacity(configuration.isPressed ? 0.7 : 1.0)

@@ -57,6 +57,16 @@ public enum Colors {
     public static var dividerAdaptive: Color {
         Color(light: .init(hex: 0xE5E5EA), dark: .init(hex: 0x38383A))
     }
+
+    /// Language card background (slightly different from surface for layering).
+    public static var languageCardAdaptive: Color {
+        Color(light: .init(hex: 0xE5E5EA), dark: .init(hex: 0x121214))
+    }
+
+    /// Dropdown/picker background.
+    public static var dropdownAdaptive: Color {
+        Color(light: .init(hex: 0xE5E5EA), dark: .init(hex: 0x1C1C1E))
+    }
 }
 
 // MARK: - Color Extensions
