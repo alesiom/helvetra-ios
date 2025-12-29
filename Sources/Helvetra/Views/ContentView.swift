@@ -13,10 +13,11 @@ class StoreService: ObservableObject {
         case free = "Free"
         case plus = "Helvetra+"
 
+        /// Monthly character limit (matches backend tiers.py).
         var characterLimit: Int {
             switch self {
-            case .free: return 1_000
-            case .plus: return 20_000
+            case .free: return 20_000
+            case .plus: return 500_000
             }
         }
 
