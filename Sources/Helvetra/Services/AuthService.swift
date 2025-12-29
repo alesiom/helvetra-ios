@@ -2,6 +2,12 @@ import AuthenticationServices
 import Foundation
 import Security
 
+// MARK: - Notifications
+
+extension Notification.Name {
+    static let authStateDidChange = Notification.Name("authStateDidChange")
+}
+
 // MARK: - Auth Models
 
 /// User profile from authentication.
@@ -173,6 +179,9 @@ class AuthService: NSObject, ObservableObject {
             tier: tier
         )
         isAuthenticated = true
+
+        // Sync subscription tier with StoreService
+        NotificationCenter.default.post(name: .authStateDidChange, object: nil)
     }
 
     // MARK: - Sign in with Apple
@@ -278,6 +287,9 @@ class AuthService: NSObject, ObservableObject {
 
         currentUser = user
         isAuthenticated = true
+
+        // Sync subscription tier with StoreService (for web subscriptions)
+        NotificationCenter.default.post(name: .authStateDidChange, object: nil)
     }
 
     /// Get current access token, refreshing if needed.
@@ -376,6 +388,9 @@ class AuthService: NSObject, ObservableObject {
         KeychainHelper.deleteAll()
         currentUser = nil
         isAuthenticated = false
+
+        // Sync subscription tier (revert to free)
+        NotificationCenter.default.post(name: .authStateDidChange, object: nil)
     }
 
     // MARK: - Account Deletion

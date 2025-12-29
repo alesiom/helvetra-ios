@@ -45,6 +45,15 @@ class StoreService: ObservableObject {
     private init() {
         updateListenerTask = listenForTransactions()
         Task { await loadProducts() }
+
+        // Listen for auth state changes to sync web subscriptions
+        NotificationCenter.default.addObserver(
+            forName: .authStateDidChange,
+            object: nil,
+            queue: .main
+        ) { [weak self] _ in
+            self?.syncFromAuth()
+        }
     }
 
     deinit {
@@ -124,13 +133,27 @@ class StoreService: ObservableObject {
         }
     }
 
-    /// Update current tier based on purchases.
+    /// Update current tier based on purchases and backend subscription.
     private func updateCurrentTier() {
+        // Check StoreKit purchases (App Store subscriptions)
         if purchasedProductIDs.contains(where: { $0.contains("plus") }) {
             currentTier = .plus
-        } else {
-            currentTier = .free
+            return
         }
+
+        // Check backend tier (web subscriptions via Payrexx)
+        if let backendTier = AuthService.shared.currentUser?.tier,
+           backendTier.lowercased().contains("plus") || backendTier.lowercased().contains("pro") {
+            currentTier = .plus
+            return
+        }
+
+        currentTier = .free
+    }
+
+    /// Sync tier from backend auth state. Call when auth state changes.
+    func syncFromAuth() {
+        updateCurrentTier()
     }
 }
 
