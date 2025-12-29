@@ -193,7 +193,7 @@ struct ContentView: View {
     @AppStorage("selectedFormality") private var selectedFormality: String = "informal"
 
     /// Persisted dialect preference.
-    @AppStorage("selectedDialect") private var selectedDialect: String = "Zürich"
+    @AppStorage("selectedDialect") private var selectedDialect: String = "zurich"
 
     /// Haptic feedback enabled setting.
     @AppStorage("hapticsEnabled") private var hapticsEnabled: Bool = true
@@ -278,7 +278,7 @@ struct ContentView: View {
         viewModel.sourceLang = selectedSourceLanguage
         viewModel.targetLang = selectedTargetLanguage
         viewModel.formality = selectedFormality
-        viewModel.dialect = selectedDialect.lowercased()
+        viewModel.dialect = selectedDialect
     }
 
     /// Paste text from clipboard.
@@ -676,7 +676,15 @@ struct LanguagePickerSheet: View {
         ("Romansh", "rm"),
     ]
 
-    let dialects = ["Zürich", "Bern", "Basel", "Luzern", "St. Gallen", "Graubünden"]
+    /// Dialects with display name and API code.
+    let dialects: [(String, String)] = [
+        ("Zürich", "zurich"),
+        ("Bern", "bern"),
+        ("Basel", "basel"),
+        ("Luzern", "luzern"),
+        ("St. Gallen", "stgallen"),
+        ("Wallis", "wallis"),
+    ]
 
     private let languagesWithDialect: Set<String> = ["gsw"]
 
@@ -754,14 +762,14 @@ struct LanguagePickerSheet: View {
     private func settingsView(for languageCode: String) -> some View {
         List {
             Section {
-                ForEach(dialects, id: \.self) { dialect in
-                    Button(action: { selectedDialect = dialect }) {
+                ForEach(dialects, id: \.1) { dialect in
+                    Button(action: { selectedDialect = dialect.1 }) {
                         HStack {
-                            Text(dialect)
+                            Text(dialect.0)
                                 .font(Typography.bodyLarge)
                                 .foregroundStyle(Colors.textPrimaryAdaptive)
                             Spacer()
-                            if dialect == selectedDialect {
+                            if dialect.1 == selectedDialect {
                                 Image(systemName: "checkmark")
                                     .foregroundStyle(Colors.swissRed)
                             }
