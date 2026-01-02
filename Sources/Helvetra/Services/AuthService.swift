@@ -137,12 +137,30 @@ class AuthService: NSObject, ObservableObject {
     private let session: URLSession
     private var signInContinuation: CheckedContinuation<ASAuthorization, Error>?
 
+    // MARK: - Debug Mode
+
+    /// Set to true to fake authenticated state for UI testing/screenshots.
+    /// Remember to set back to false before release!
+    private let debugFakeAuth = false
+
     private override init() {
         let config = URLSessionConfiguration.default
         config.timeoutIntervalForRequest = 30
         self.session = URLSession(configuration: config)
         super.init()
-        restoreSession()
+
+        if debugFakeAuth {
+            // Fake authenticated state for UI testing
+            currentUser = AuthUser(
+                id: "debug-user",
+                email: "alex@helvetra.ch",
+                emailVerified: true,
+                tier: "plus"
+            )
+            isAuthenticated = true
+        } else {
+            restoreSession()
+        }
     }
 
     // MARK: - Session Restoration

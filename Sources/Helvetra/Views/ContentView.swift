@@ -1,4 +1,3 @@
-import AuthenticationServices
 import StoreKit
 import SwiftUI
 
@@ -266,7 +265,13 @@ struct ContentView: View {
     }
 
     private var sourceLanguageName: String {
-        languageNames[selectedSourceLanguage] ?? selectedSourceLanguage
+        // Show detected language when auto-detect found a result
+        if selectedSourceLanguage == "auto",
+           let detected = viewModel.detectedLanguage,
+           let detectedName = languageNames[detected] {
+            return "Detected: \(detectedName)"
+        }
+        return languageNames[selectedSourceLanguage] ?? selectedSourceLanguage
     }
 
     private var targetLanguageName: String {
@@ -1054,6 +1059,7 @@ struct SettingsView: View {
     @Binding var hapticsEnabled: Bool
     @ObservedObject private var storeService = StoreService.shared
     @ObservedObject private var authService = AuthService.shared
+    @ObservedObject private var usageService = UsageService.shared
     @State private var showSubscription: Bool = false
     @State private var showDeleteConfirmation: Bool = false
 
@@ -1063,12 +1069,6 @@ struct SettingsView: View {
 
     private var buildNumber: String {
         Bundle.main.infoDictionary?["CFBundleVersion"] as? String ?? "1"
-    }
-
-    private var tierDescription: String {
-        let limit = storeService.currentTier.characterLimit
-        let formatted = limit >= 1000 ? "\(limit / 1000)k" : "\(limit)"
-        return "\(formatted) characters per translation"
     }
 
     var body: some View {
@@ -1090,24 +1090,36 @@ struct SettingsView: View {
                             title: user.email,
                             subtitle: "\(storeService.currentTier.rawValue) Plan"
                         )
+                    } else {
+                        // Signed out state
+                        SettingsRow(
+                            icon: "person.circle",
+                            title: "\(storeService.currentTier.rawValue) Plan",
+                            subtitle: nil
+                        )
+                    }
 
-                        if storeService.currentTier == .free {
-                            Button(action: { showSubscription = true }) {
-                                HStack {
-                                    Image(systemName: "arrow.up.circle.fill")
-                                        .foregroundStyle(Colors.swissRed)
-                                    Text("Upgrade to Helvetra+")
-                                        .font(Typography.bodyMedium)
-                                        .foregroundStyle(Colors.swissRed)
-                                    Spacer()
-                                    Image(systemName: "chevron.right")
-                                        .font(.system(size: 12, weight: .semibold))
-                                        .foregroundStyle(Colors.textSecondaryAdaptive)
-                                }
-                                .padding(.vertical, Spacing.xs)
+                    // Usage bar (shown for all users)
+                    UsageBarView(usageService: usageService)
+
+                    if storeService.currentTier == .free {
+                        Button(action: { showSubscription = true }) {
+                            HStack {
+                                Image(systemName: "arrow.up.circle.fill")
+                                    .foregroundStyle(Colors.swissRed)
+                                Text("Upgrade to Helvetra+")
+                                    .font(Typography.bodyMedium)
+                                    .foregroundStyle(Colors.swissRed)
+                                Spacer()
+                                Image(systemName: "chevron.right")
+                                    .font(.system(size: 12, weight: .semibold))
+                                    .foregroundStyle(Colors.textSecondaryAdaptive)
                             }
+                            .padding(.vertical, Spacing.xs)
                         }
+                    }
 
+                    if authService.isAuthenticated {
                         Button(action: {
                             Task { await authService.signOut() }
                         }) {
@@ -1120,43 +1132,6 @@ struct SettingsView: View {
                                 Spacer()
                             }
                             .padding(.vertical, Spacing.xs)
-                        }
-                    } else {
-                        // Signed out state
-                        SettingsRow(
-                            icon: "person.circle",
-                            title: "\(storeService.currentTier.rawValue) Plan",
-                            subtitle: tierDescription
-                        )
-
-                        SignInWithAppleButton(.signIn, onRequest: { request in
-                            request.requestedScopes = [.email, .fullName]
-                        }, onCompletion: { _ in })
-                        .frame(height: 50)
-                        .cornerRadius(Spacing.buttonRadius)
-                        .overlay {
-                            // Custom tap handler since SwiftUI's completion doesn't work well
-                            Color.clear
-                                .contentShape(Rectangle())
-                                .onTapGesture {
-                                    Task {
-                                        do {
-                                            try await authService.signInWithApple()
-                                            HapticService.success()
-                                        } catch {
-                                            authService.errorMessage = error.localizedDescription
-                                        }
-                                    }
-                                }
-                        }
-                        .disabled(authService.isLoading)
-                        .opacity(authService.isLoading ? 0.6 : 1.0)
-
-                        if let error = authService.errorMessage {
-                            Text(error)
-                                .font(Typography.caption)
-                                .foregroundStyle(.red)
-                                .padding(.top, Spacing.xs)
                         }
                     }
                 }
@@ -1251,6 +1226,58 @@ struct SettingsView: View {
         } message: {
             Text("This will permanently delete your account and all associated data. This action cannot be undone.")
         }
+        .onAppear {
+            Task { await usageService.fetchUsage() }
+        }
+    }
+}
+
+// MARK: - Usage Bar View
+
+/// Progress bar showing character usage against limit.
+struct UsageBarView: View {
+    @ObservedObject var usageService: UsageService
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: Spacing.xs) {
+            // Progress bar
+            GeometryReader { geometry in
+                ZStack(alignment: .leading) {
+                    // Background track
+                    RoundedRectangle(cornerRadius: 4)
+                        .fill(Colors.textSecondaryAdaptive.opacity(0.2))
+
+                    // Progress fill
+                    RoundedRectangle(cornerRadius: 4)
+                        .fill(progressColor)
+                        .frame(width: geometry.size.width * usageService.usagePercentage)
+                }
+            }
+            .frame(height: 8)
+
+            // Labels
+            HStack {
+                Text(usageService.usageText)
+                    .font(Typography.caption)
+                    .foregroundStyle(Colors.textSecondaryAdaptive)
+
+                Spacer()
+
+                Text(usageService.periodText)
+                    .font(Typography.caption)
+                    .foregroundStyle(Colors.textSecondaryAdaptive)
+            }
+        }
+        .padding(.vertical, Spacing.xs)
+    }
+
+    private var progressColor: Color {
+        if usageService.usagePercentage >= 0.9 {
+            return Colors.swissRed
+        } else if usageService.usagePercentage >= 0.7 {
+            return .orange
+        }
+        return Colors.swissRed.opacity(0.7)
     }
 }
 
@@ -1429,16 +1456,28 @@ class TranslationViewModel: ObservableObject {
         isTranslating = true
         errorMessage = nil
 
+        // Client-side language detection (like webapp's franc)
+        var effectiveSourceLang = sourceLang
+        if sourceLang == "auto" {
+            if let detected = LanguageDetectionService.detectLanguage(text) {
+                effectiveSourceLang = detected
+                detectedLanguage = detected
+            }
+        }
+
         do {
             let result = try await TranslationService.shared.translate(
                 text: text,
-                sourceLang: sourceLang,
+                sourceLang: effectiveSourceLang,
                 targetLang: targetLang,
                 formality: formality,
                 dialect: dialect
             )
             translatedText = result.translation
-            detectedLanguage = result.detectedSourceLang
+            // Use client-side detection if available, fallback to backend detection
+            if detectedLanguage == nil {
+                detectedLanguage = result.detectedSourceLang
+            }
             HapticService.success()
         } catch let error as TranslationError {
             errorMessage = error.errorDescription
@@ -1494,10 +1533,21 @@ actor TranslationService {
             urlRequest.setValue("Bearer \(accessToken)", forHTTPHeaderField: "Authorization")
         }
 
+        // Debug: print request body
+        if let body = urlRequest.httpBody, let bodyString = String(data: body, encoding: .utf8) {
+            print("[Translation] Request: \(bodyString)")
+        }
+
         let (data, response) = try await session.data(for: urlRequest)
 
         guard let httpResponse = response as? HTTPURLResponse else {
             throw TranslationError.networkError
+        }
+
+        // Debug: print response
+        print("[Translation] Status: \(httpResponse.statusCode)")
+        if let responseString = String(data: data, encoding: .utf8) {
+            print("[Translation] Response: \(responseString)")
         }
 
         if httpResponse.statusCode != 200 {
