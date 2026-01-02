@@ -1,0 +1,114 @@
+/*
+  Localizable.strings (Italian)
+  Helvetra
+*/
+
+// MARK: - Translation Screen
+
+"translation.placeholder.input" = "Digita o incolla qui per tradurre";
+"translation.placeholder.output" = "La traduzione apparirà qui";
+"translation.status.translating" = "Traduzione...";
+"translation.button.paste" = "Incolla";
+"translation.button.clear" = "Cancella testo";
+"translation.button.copy" = "Copia traduzione";
+"translation.button.share" = "Condividi traduzione";
+"translation.toast.copied" = "Copiato negli appunti";
+
+// MARK: - Language Selection
+
+"language.auto" = "Automatico";
+"language.en" = "Inglese";
+"language.de" = "Tedesco";
+"language.fr" = "Francese";
+"language.it" = "Italiano";
+"language.gsw" = "Svizzero tedesco";
+"language.rm" = "Romancio";
+
+"language.picker.title" = "Seleziona lingua";
+"language.picker.source" = "Lingua di partenza: %@";
+"language.picker.target" = "Lingua di arrivo: %@";
+"language.picker.source.detected" = "%@, rilevato automaticamente";
+"language.picker.swap" = "Inverti le lingue";
+"language.picker.change" = "Tocca due volte per cambiare la lingua %@";
+
+// MARK: - Dialects
+
+"dialect.title" = "Dialetto";
+"dialect.footer" = "Seleziona il dialetto regionale per la traduzione in svizzero tedesco.";
+"dialect.zurich" = "Zurigo";
+"dialect.bern" = "Berna";
+"dialect.basel" = "Basilea";
+"dialect.luzern" = "Lucerna";
+"dialect.stgallen" = "San Gallo";
+"dialect.wallis" = "Vallese";
+
+// MARK: - Settings
+
+"settings.title" = "Impostazioni";
+"settings.close" = "Chiudi impostazioni";
+"settings.open" = "Apri impostazioni";
+
+// Account
+"settings.account.title" = "Account";
+"settings.account.plan" = "Piano %@";
+"settings.account.upgrade" = "Passa a Helvetra+";
+"settings.account.signout" = "Esci";
+
+// Preferences
+"settings.preferences.title" = "Preferenze";
+"settings.preferences.haptics" = "Feedback aptico";
+
+// About
+"settings.about.title" = "Informazioni";
+"settings.about.version" = "Versione";
+"settings.about.privacy" = "Informativa sulla privacy";
+"settings.about.terms" = "Termini di servizio";
+"settings.about.footer" = "Fatto con ❤️ in Svizzera";
+
+// Danger Zone
+"settings.danger.title" = "Zona pericolosa";
+"settings.danger.delete" = "Elimina account";
+"settings.danger.delete.title" = "Elimina account";
+"settings.danger.delete.message" = "Questo eliminerà definitivamente il tuo account e tutti i dati associati. Questa azione non può essere annullata.";
+"settings.danger.delete.confirm" = "Elimina account";
+"settings.danger.delete.cancel" = "Annulla";
+
+// MARK: - Subscription
+
+"subscription.title" = "Upgrade";
+"subscription.current" = "Attuale: %@";
+"subscription.monthly" = "Mensile";
+"subscription.yearly" = "Annuale";
+"subscription.save" = "Risparmia 20%";
+"subscription.billed.yearly" = "fatturato annualmente";
+"subscription.subscribe" = "Abbonati";
+"subscription.current.plan" = "Piano attuale";
+"subscription.restore" = "Ripristina acquisti";
+"subscription.success.title" = "Acquisto riuscito";
+"subscription.success.message" = "Grazie per l'upgrade! Il tuo nuovo piano è ora attivo.";
+
+// Features
+"subscription.feature.characters" = "20'000 caratteri per traduzione";
+"subscription.feature.dialects" = "Tutti i dialetti inclusi";
+"subscription.feature.support" = "Supporto prioritario";
+
+// MARK: - Usage
+
+"usage.period.weekly" = "Si azzera ogni settimana";
+"usage.period.monthly" = "Si azzera ogni mese";
+
+// MARK: - Common
+
+"common.done" = "Fatto";
+"common.back" = "Indietro";
+"common.ok" = "OK";
+"common.cancel" = "Annulla";
+
+// MARK: - Errors
+
+"error.network" = "Connessione di rete fallita";
+"error.server" = "Errore del server (%d)";
+"error.invalid.response" = "Risposta non valida dal server";
+"error.translation.failed" = "Traduzione fallita";
+"error.verification.failed" = "Verifica della transazione fallita";
+"error.purchase.failed" = "Impossibile completare l'acquisto";

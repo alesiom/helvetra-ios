@@ -1,0 +1,114 @@
+/*
+  Localizable.strings (English)
+  Helvetra
+*/
+
+// MARK: - Translation Screen
+
+"translation.placeholder.input" = "Type or paste here to translate";
+"translation.placeholder.output" = "Translation appears here";
+"translation.status.translating" = "Translating...";
+"translation.button.paste" = "Paste";
+"translation.button.clear" = "Clear text";
+"translation.button.copy" = "Copy translation";
+"translation.button.share" = "Share translation";
+"translation.toast.copied" = "Copied to clipboard";
+
+// MARK: - Language Selection
+
+"language.auto" = "Auto-detect";
+"language.en" = "English";
+"language.de" = "German";
+"language.fr" = "French";
+"language.it" = "Italian";
+"language.gsw" = "Swiss German";
+"language.rm" = "Romansh";
+
+"language.picker.title" = "Select Language";
+"language.picker.source" = "Source language: %@";
+"language.picker.target" = "Target language: %@";
+"language.picker.source.detected" = "%@, auto-detected";
+"language.picker.swap" = "Swap languages";
+"language.picker.change" = "Double tap to change %@ language";
+
+// MARK: - Dialects
+
+"dialect.title" = "Dialect";
+"dialect.footer" = "Select the regional dialect for your Swiss German translation.";
+"dialect.zurich" = "Zürich";
+"dialect.bern" = "Bern";
+"dialect.basel" = "Basel";
+"dialect.luzern" = "Luzern";
+"dialect.stgallen" = "St. Gallen";
+"dialect.wallis" = "Wallis";
+
+// MARK: - Settings
+
+"settings.title" = "Settings";
+"settings.close" = "Close settings";
+"settings.open" = "Open settings";
+
+// Account
+"settings.account.title" = "Account";
+"settings.account.plan" = "%@ Plan";
+"settings.account.upgrade" = "Upgrade to Helvetra+";
+"settings.account.signout" = "Sign Out";
+
+// Preferences
+"settings.preferences.title" = "Preferences";
+"settings.preferences.haptics" = "Haptic feedback";
+
+// About
+"settings.about.title" = "About";
+"settings.about.version" = "Version";
+"settings.about.privacy" = "Privacy Policy";
+"settings.about.terms" = "Terms of Service";
+"settings.about.footer" = "Made with ❤️ in Switzerland";
+
+// Danger Zone
+"settings.danger.title" = "Danger Zone";
+"settings.danger.delete" = "Delete Account";
+"settings.danger.delete.title" = "Delete Account";
+"settings.danger.delete.message" = "This will permanently delete your account and all associated data. This action cannot be undone.";
+"settings.danger.delete.confirm" = "Delete Account";
+"settings.danger.delete.cancel" = "Cancel";
+
+// MARK: - Subscription
+
+"subscription.title" = "Upgrade";
+"subscription.current" = "Current: %@";
+"subscription.monthly" = "Monthly";
+"subscription.yearly" = "Yearly";
+"subscription.save" = "Save 20%";
+"subscription.billed.yearly" = "billed yearly";
+"subscription.subscribe" = "Subscribe";
+"subscription.current.plan" = "Current Plan";
+"subscription.restore" = "Restore Purchases";
+"subscription.success.title" = "Purchase Successful";
+"subscription.success.message" = "Thank you for upgrading! Your new plan is now active.";
+
+// Features
+"subscription.feature.characters" = "20,000 characters per translation";
+"subscription.feature.dialects" = "All dialects included";
+"subscription.feature.support" = "Priority support";
+
+// MARK: - Usage
+
+"usage.period.weekly" = "Resets weekly";
+"usage.period.monthly" = "Resets monthly";
+
+// MARK: - Common
+
+"common.done" = "Done";
+"common.back" = "Back";
+"common.ok" = "OK";
+"common.cancel" = "Cancel";
+
+// MARK: - Errors
+
+"error.network" = "Network connection failed";
+"error.server" = "Server error (%d)";
+"error.invalid.response" = "Invalid response from server";
+"error.translation.failed" = "Translation failed";
+"error.verification.failed" = "Transaction verification failed";
+"error.purchase.failed" = "Purchase could not be completed";

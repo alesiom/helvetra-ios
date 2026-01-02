@@ -3,33 +3,40 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 77;
+	objectVersion = 63;
 	objects = {
 
 /* Begin PBXBuildFile section */
 		0858718AF43BE73B66A915A5 /* Spacing.swift in Sources */ = {isa = PBXBuildFile; fileRef = 56B7D16E1976F7BC61590D37 /* Spacing.swift */; };
 		1E1CC867E7C17307EF17E494 /* HelvetraApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC9E1D0A855A0F75AE0D99C3 /* HelvetraApp.swift */; };
+		2A3B4C5D6E7F8091A2B3C4D5 /* Strings.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1B2C3D4E5F6071829A0B1C2D /* Strings.swift */; };
 		3F060B44879615D27E9D769E /* GlassEffect.swift in Sources */ = {isa = PBXBuildFile; fileRef = ED576CDF08E6F109DF5F1933 /* GlassEffect.swift */; };
+		4A5B6C7D8E9F0A1B2C3D4E5F /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = 5B6C7D8E9F0A1B2C3D4E5F6A /* Localizable.strings */; };
 		61802848B42C827A248D96CC /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1E204EB1315013CEBDE3EE5C /* ContentView.swift */; };
-		7A8B3E2F1D4C5A6B9E0F2C3D /* AuthService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8C9D4E3F2A5B6C7D0E1F3A4B /* AuthService.swift */; };
-		9B7C4D3E2F1A5B6C8D0E2F4A /* UsageService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5D8E6F4A3B2C1D0E9F8A7B6C /* UsageService.swift */; };
 		6A9B8C7D5E4F3A2B1C0D9E8F /* LanguageDetectionService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3E7F6A5B4C3D2E1F0A9B8C7D /* LanguageDetectionService.swift */; };
+		7A8B3E2F1D4C5A6B9E0F2C3D /* AuthService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8C9D4E3F2A5B6C7D0E1F3A4B /* AuthService.swift */; };
 		866964C9587E172BC26307D7 /* Typography.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8D7B5486AF50F164D79D5983 /* Typography.swift */; };
+		9B7C4D3E2F1A5B6C8D0E2F4A /* UsageService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5D8E6F4A3B2C1D0E9F8A7B6C /* UsageService.swift */; };
 		ACE03DF3F4BD058D596820CB /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = ACB54CA0202FACCE83BF8B4C /* Assets.xcassets */; };
 		B997A0E9D5477DA833E45D95 /* Theme.swift in Sources */ = {isa = PBXBuildFile; fileRef = 848DC17344860A13B6D91886 /* Theme.swift */; };
 		B9B09AAE22BE58AD54DCF05E /* Colors.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6FE96AD20ED07BA62B746623 /* Colors.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		1B2C3D4E5F6071829A0B1C2D /* Strings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Strings.swift; sourceTree = "<group>"; };
 		1E204EB1315013CEBDE3EE5C /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
+		3E7F6A5B4C3D2E1F0A9B8C7D /* LanguageDetectionService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LanguageDetectionService.swift; sourceTree = "<group>"; };
 		56B7D16E1976F7BC61590D37 /* Spacing.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Spacing.swift; sourceTree = "<group>"; };
+		5D8E6F4A3B2C1D0E9F8A7B6C /* UsageService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UsageService.swift; sourceTree = "<group>"; };
+		6C7D8E9F0A1B2C3D4E5F6A7B /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/Localizable.strings; sourceTree = "<group>"; };
 		6FE96AD20ED07BA62B746623 /* Colors.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Colors.swift; sourceTree = "<group>"; };
+		7D8E9F0A1B2C3D4E5F6A7B8C /* de */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = de; path = de.lproj/Localizable.strings; sourceTree = "<group>"; };
 		848DC17344860A13B6D91886 /* Theme.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Theme.swift; sourceTree = "<group>"; };
 		8AFBDED448017D2FCF0705E6 /* Helvetra.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = Helvetra.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		8C9D4E3F2A5B6C7D0E1F3A4B /* AuthService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthService.swift; sourceTree = "<group>"; };
-		5D8E6F4A3B2C1D0E9F8A7B6C /* UsageService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UsageService.swift; sourceTree = "<group>"; };
-		3E7F6A5B4C3D2E1F0A9B8C7D /* LanguageDetectionService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LanguageDetectionService.swift; sourceTree = "<group>"; };
 		8D7B5486AF50F164D79D5983 /* Typography.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Typography.swift; sourceTree = "<group>"; };
+		8E9F0A1B2C3D4E5F6A7B8C9D /* fr */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = fr; path = fr.lproj/Localizable.strings; sourceTree = "<group>"; };
+		9F0A1B2C3D4E5F6A7B8C9D0E /* it */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = it; path = it.lproj/Localizable.strings; sourceTree = "<group>"; };
 		ACB54CA0202FACCE83BF8B4C /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		D42A59DC879D543CBCBA709F /* Helvetra.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Helvetra.entitlements; sourceTree = "<group>"; };
 		DC9E1D0A855A0F75AE0D99C3 /* HelvetraApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HelvetraApp.swift; sourceTree = "<group>"; };
@@ -61,6 +68,7 @@
 				ACB54CA0202FACCE83BF8B4C /* Assets.xcassets */,
 				D42A59DC879D543CBCBA709F /* Helvetra.entitlements */,
 				E52800E38DDA407998236848 /* Info.plist */,
+				5B6C7D8E9F0A1B2C3D4E5F6A /* Localizable.strings */,
 			);
 			path = Resources;
 			sourceTree = "<group>";
@@ -110,6 +118,7 @@
 				A5FD80900F9D5562AD89B791 /* Resources */,
 				532D8E274857C282E25476AF /* Services */,
 				B2DD18B860024438F6750E0E /* Views */,
+				1B2C3D4E5F6071829A0B1C2D /* Strings.swift */,
 			);
 			name = Helvetra;
 			path = Sources/Helvetra;
@@ -174,10 +183,12 @@
 			knownRegions = (
 				Base,
 				en,
+				de,
+				fr,
+				it,
 			);
 			mainGroup = C555DFAE7F629788D816A359;
 			minimizedProjectReferenceProxies = 1;
-			preferredProjectObjectVersion = 77;
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
@@ -192,6 +203,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				ACE03DF3F4BD058D596820CB /* Assets.xcassets in Resources */,
+				4A5B6C7D8E9F0A1B2C3D4E5F /* Localizable.strings in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -210,12 +222,27 @@
 				3F060B44879615D27E9D769E /* GlassEffect.swift in Sources */,
 				1E1CC867E7C17307EF17E494 /* HelvetraApp.swift in Sources */,
 				0858718AF43BE73B66A915A5 /* Spacing.swift in Sources */,
+				2A3B4C5D6E7F8091A2B3C4D5 /* Strings.swift in Sources */,
 				B997A0E9D5477DA833E45D95 /* Theme.swift in Sources */,
 				866964C9587E172BC26307D7 /* Typography.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXSourcesBuildPhase section */
+
+/* Begin PBXVariantGroup section */
+		5B6C7D8E9F0A1B2C3D4E5F6A /* Localizable.strings */ = {
+			isa = PBXVariantGroup;
+			children = (
+				6C7D8E9F0A1B2C3D4E5F6A7B /* en */,
+				7D8E9F0A1B2C3D4E5F6A7B8C /* de */,
+				8E9F0A1B2C3D4E5F6A7B8C9D /* fr */,
+				9F0A1B2C3D4E5F6A7B8C9D0E /* it */,
+			);
+			name = Localizable.strings;
+			sourceTree = "<group>";
+		};
+/* End PBXVariantGroup section */
 
 /* Begin XCBuildConfiguration section */
 		38F9A403D91469D761AA783E /* Debug */ = {

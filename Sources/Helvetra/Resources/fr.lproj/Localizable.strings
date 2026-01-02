@@ -1,0 +1,114 @@
+/*
+  Localizable.strings (French)
+  Helvetra
+*/
+
+// MARK: - Translation Screen
+
+"translation.placeholder.input" = "Tapez ou collez ici pour traduire";
+"translation.placeholder.output" = "La traduction apparaît ici";
+"translation.status.translating" = "Traduction...";
+"translation.button.paste" = "Coller";
+"translation.button.clear" = "Effacer le texte";
+"translation.button.copy" = "Copier la traduction";
+"translation.button.share" = "Partager la traduction";
+"translation.toast.copied" = "Copié dans le presse-papiers";
+
+// MARK: - Language Selection
+
+"language.auto" = "Automatique";
+"language.en" = "Anglais";
+"language.de" = "Allemand";
+"language.fr" = "Français";
+"language.it" = "Italien";
+"language.gsw" = "Suisse allemand";
+"language.rm" = "Romanche";
+
+"language.picker.title" = "Choisir la langue";
+"language.picker.source" = "Langue source : %@";
+"language.picker.target" = "Langue cible : %@";
+"language.picker.source.detected" = "%@, détecté automatiquement";
+"language.picker.swap" = "Inverser les langues";
+"language.picker.change" = "Touchez deux fois pour changer la langue %@";
+
+// MARK: - Dialects
+
+"dialect.title" = "Dialecte";
+"dialect.footer" = "Sélectionnez le dialecte régional pour votre traduction en suisse allemand.";
+"dialect.zurich" = "Zurich";
+"dialect.bern" = "Berne";
+"dialect.basel" = "Bâle";
+"dialect.luzern" = "Lucerne";
+"dialect.stgallen" = "Saint-Gall";
+"dialect.wallis" = "Valais";
+
+// MARK: - Settings
+
+"settings.title" = "Réglages";
+"settings.close" = "Fermer les réglages";
+"settings.open" = "Ouvrir les réglages";
+
+// Account
+"settings.account.title" = "Compte";
+"settings.account.plan" = "Forfait %@";
+"settings.account.upgrade" = "Passer à Helvetra+";
+"settings.account.signout" = "Se déconnecter";
+
+// Preferences
+"settings.preferences.title" = "Préférences";
+"settings.preferences.haptics" = "Retour haptique";
+
+// About
+"settings.about.title" = "À propos";
+"settings.about.version" = "Version";
+"settings.about.privacy" = "Politique de confidentialité";
+"settings.about.terms" = "Conditions d'utilisation";
+"settings.about.footer" = "Fait avec ❤️ en Suisse";
+
+// Danger Zone
+"settings.danger.title" = "Zone de danger";
+"settings.danger.delete" = "Supprimer le compte";
+"settings.danger.delete.title" = "Supprimer le compte";
+"settings.danger.delete.message" = "Cela supprimera définitivement votre compte et toutes les données associées. Cette action est irréversible.";
+"settings.danger.delete.confirm" = "Supprimer le compte";
+"settings.danger.delete.cancel" = "Annuler";
+
+// MARK: - Subscription
+
+"subscription.title" = "Mise à niveau";
+"subscription.current" = "Actuel : %@";
+"subscription.monthly" = "Mensuel";
+"subscription.yearly" = "Annuel";
+"subscription.save" = "Économisez 20%";
+"subscription.billed.yearly" = "facturé annuellement";
+"subscription.subscribe" = "S'abonner";
+"subscription.current.plan" = "Forfait actuel";
+"subscription.restore" = "Restaurer les achats";
+"subscription.success.title" = "Achat réussi";
+"subscription.success.message" = "Merci pour votre mise à niveau ! Votre nouveau forfait est maintenant actif.";
+
+// Features
+"subscription.feature.characters" = "20 000 caractères par traduction";
+"subscription.feature.dialects" = "Tous les dialectes inclus";
+"subscription.feature.support" = "Support prioritaire";
+
+// MARK: - Usage
+
+"usage.period.weekly" = "Réinitialisé chaque semaine";
+"usage.period.monthly" = "Réinitialisé chaque mois";
+
+// MARK: - Common
+
+"common.done" = "Terminé";
+"common.back" = "Retour";
+"common.ok" = "OK";
+"common.cancel" = "Annuler";
+
+// MARK: - Errors
+
+"error.network" = "Connexion réseau échouée";
+"error.server" = "Erreur serveur (%d)";
+"error.invalid.response" = "Réponse invalide du serveur";
+"error.translation.failed" = "La traduction a échoué";
+"error.verification.failed" = "La vérification de la transaction a échoué";
+"error.purchase.failed" = "L'achat n'a pas pu être finalisé";

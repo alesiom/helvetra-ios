@@ -228,17 +228,12 @@ struct ContentView: View {
     @State private var isSettingsOpen: Bool = false
     @State private var showCopyConfirmation: Bool = false
 
-    // MARK: - Constants
+    // MARK: - Helpers
 
-    private let languageNames: [String: String] = [
-        "auto": "Auto-detect",
-        "en": "English",
-        "de": "German",
-        "fr": "French",
-        "it": "Italian",
-        "gsw": "Swiss German",
-        "rm": "Romansh"
-    ]
+    /// Get localized language name for a language code.
+    private func languageName(for code: String) -> String {
+        L10n.languageName(code)
+    }
 
     /// Space above L1 when keyboard hidden.
     private let settingsAreaHeight: CGFloat = 16
@@ -272,15 +267,14 @@ struct ContentView: View {
     private var sourceLanguageName: String {
         // Show detected language name when auto-detect found a result
         if selectedSourceLanguage == "auto",
-           let detected = viewModel.detectedLanguage,
-           let detectedName = languageNames[detected] {
-            return detectedName
+           let detected = viewModel.detectedLanguage {
+            return languageName(for: detected)
         }
-        return languageNames[selectedSourceLanguage] ?? selectedSourceLanguage
+        return languageName(for: selectedSourceLanguage)
     }
 
     private var targetLanguageName: String {
-        languageNames[selectedTargetLanguage] ?? selectedTargetLanguage
+        languageName(for: selectedTargetLanguage)
     }
 
     private var isKeyboardVisible: Bool { keyboardHeight > 0 }
@@ -409,7 +403,7 @@ struct ContentView: View {
                             }
                         }
                         .frame(width: Spacing.touchTarget, height: Spacing.touchTarget)
-                        .accessibilityLabel(isSettingsOpen ? "Close settings" : "Open settings")
+                        .accessibilityLabel(isSettingsOpen ? L10n.closeSettings : L10n.openSettings)
                         .accessibilityHint(isSettingsOpen ? "Double tap to close settings" : "Double tap to open settings")
 
                         Spacer()
@@ -441,7 +435,7 @@ struct ContentView: View {
                             // L1T: Input area
                             VStack(alignment: .leading, spacing: Spacing.sm) {
                                 HStack(alignment: .top) {
-                                    TextField("Type or paste here to translate", text: $viewModel.sourceText, axis: .vertical)
+                                    TextField(L10n.inputPlaceholder, text: $viewModel.sourceText, axis: .vertical)
                                         .font(Typography.translationText)
                                         .foregroundStyle(Colors.textPrimaryAdaptive)
                                         .focused($isSourceFocused)
@@ -465,14 +459,14 @@ struct ContentView: View {
                                         }
                                         .frame(width: Spacing.touchTarget, height: Spacing.touchTarget)
                                         .foregroundStyle(Colors.textSecondaryAdaptive)
-                                        .accessibilityLabel("Clear text")
+                                        .accessibilityLabel(L10n.clearText)
                                         .accessibilityHint("Double tap to clear source text")
                                     }
                                 }
 
                                 if viewModel.sourceText.isEmpty {
                                     Button(action: { pasteFromClipboard() }) {
-                                        Label("Paste", systemImage: "doc.on.clipboard")
+                                        Label(L10n.paste, systemImage: "doc.on.clipboard")
                                     }
                                     .buttonStyle(.helvetraSecondary)
                                     .offset(y: isSettingsOpen ? 100 : 0)
@@ -505,14 +499,14 @@ struct ContentView: View {
                             VStack(alignment: .leading, spacing: Spacing.sm) {
                                 HStack(alignment: .top) {
                                     if viewModel.sourceText.isEmpty {
-                                        Text("Translation appears here")
+                                        Text(L10n.outputPlaceholder)
                                             .font(Typography.translationText)
                                             .foregroundStyle(Colors.textSecondaryAdaptive)
                                             .offset(y: isSettingsOpen ? 100 : 0)
                                     } else if viewModel.isTranslating {
                                         HStack(spacing: Spacing.sm) {
                                             ProgressView()
-                                            Text("Translating...")
+                                            Text(L10n.translating)
                                                 .font(Typography.translationText)
                                                 .foregroundStyle(Colors.textSecondaryAdaptive)
                                         }
@@ -542,7 +536,7 @@ struct ContentView: View {
                                         }
                                         .frame(width: Spacing.touchTarget, height: Spacing.touchTarget)
                                         .foregroundStyle(Colors.textSecondaryAdaptive)
-                                        .accessibilityLabel("Copy translation")
+                                        .accessibilityLabel(L10n.copyTranslation)
                                         .accessibilityHint("Double tap to copy translation to clipboard")
 
                                         Button(action: { shareTranslation() }) {
@@ -551,7 +545,7 @@ struct ContentView: View {
                                         }
                                         .frame(width: Spacing.touchTarget, height: Spacing.touchTarget)
                                         .foregroundStyle(Colors.textSecondaryAdaptive)
-                                        .accessibilityLabel("Share translation")
+                                        .accessibilityLabel(L10n.shareTranslation)
                                         .accessibilityHint("Double tap to share translation")
                                     }
                                     .padding(.bottom, isKeyboardVisible ? 10 : -20)
@@ -605,7 +599,7 @@ struct ContentView: View {
                                 }
                             }
                             .buttonStyle(.glassPill)
-                            .accessibilityLabel("Source language: \(sourceLanguageName)\(isLanguageDetected ? ", auto-detected" : "")")
+                            .accessibilityLabel(isLanguageDetected ? L10n.sourceLanguageDetected(sourceLanguageName) : L10n.sourceLanguageLabel(sourceLanguageName))
                             .accessibilityHint("Double tap to change source language")
 
                             Spacer()
@@ -616,7 +610,7 @@ struct ContentView: View {
                                     .foregroundStyle(Colors.textSecondaryAdaptive)
                             }
                             .frame(width: Spacing.touchTarget, height: Spacing.touchTarget)
-                            .accessibilityLabel("Swap languages")
+                            .accessibilityLabel(L10n.swapLanguages)
                             .accessibilityHint("Double tap to swap source and target languages")
 
                             Spacer()
@@ -625,7 +619,7 @@ struct ContentView: View {
                                 Text(targetLanguageName)
                             }
                             .buttonStyle(.glassPill)
-                            .accessibilityLabel("Target language: \(targetLanguageName)")
+                            .accessibilityLabel(L10n.targetLanguageLabel(targetLanguageName))
                             .accessibilityHint("Double tap to change target language")
                         }
                         .padding(.horizontal, Spacing.sm)
@@ -666,7 +660,7 @@ struct ContentView: View {
                         HStack(spacing: Spacing.sm) {
                             Image(systemName: "checkmark.circle.fill")
                                 .foregroundStyle(.green)
-                            Text("Copied to clipboard")
+                            Text(L10n.copiedToClipboard)
                                 .font(Typography.labelMedium)
                                 .foregroundStyle(Colors.textPrimaryAdaptive)
                         }
@@ -725,24 +719,11 @@ struct LanguagePickerSheet: View {
 
     @State private var pendingLanguage: String? = nil
 
-    let languages = [
-        ("English", "en"),
-        ("German", "de"),
-        ("French", "fr"),
-        ("Italian", "it"),
-        ("Swiss German", "gsw"),
-        ("Romansh", "rm"),
-    ]
+    /// Language codes in display order.
+    let languageCodes = ["en", "de", "fr", "it", "gsw", "rm"]
 
-    /// Dialects with display name and API code.
-    let dialects: [(String, String)] = [
-        ("Zürich", "zurich"),
-        ("Bern", "bern"),
-        ("Basel", "basel"),
-        ("Luzern", "luzern"),
-        ("St. Gallen", "stgallen"),
-        ("Wallis", "wallis"),
-    ]
+    /// Dialect codes in display order.
+    let dialectCodes = ["zurich", "bern", "basel", "luzern", "stgallen", "wallis"]
 
     private let languagesWithDialect: Set<String> = ["gsw"]
 
@@ -758,18 +739,18 @@ struct LanguagePickerSheet: View {
                     languageListView
                 }
             }
-            .navigationTitle(showingSettings ? "Settings" : "Select Language")
+            .navigationTitle(showingSettings ? L10n.settings : L10n.selectLanguage)
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .topBarLeading) {
                     if showingSettings {
-                        Button("Back") {
+                        Button(L10n.back) {
                             pendingLanguage = nil
                         }
                     }
                 }
                 ToolbarItem(placement: .topBarTrailing) {
-                    Button("Done") {
+                    Button(L10n.done) {
                         if let pending = pendingLanguage {
                             selectedLanguage = pending
                         }
@@ -788,7 +769,7 @@ struct LanguagePickerSheet: View {
                     dismiss()
                 }) {
                     HStack {
-                        Text("Auto-detect")
+                        Text(L10n.languageName("auto"))
                             .font(Typography.bodyLarge)
                             .foregroundStyle(Colors.textPrimaryAdaptive)
                         Spacer()
@@ -800,14 +781,14 @@ struct LanguagePickerSheet: View {
                 }
             }
 
-            ForEach(languages, id: \.1) { language in
-                Button(action: { selectLanguage(language.1) }) {
+            ForEach(languageCodes, id: \.self) { code in
+                Button(action: { selectLanguage(code) }) {
                     HStack {
-                        Text(language.0)
+                        Text(L10n.languageName(code))
                             .font(Typography.bodyLarge)
                             .foregroundStyle(Colors.textPrimaryAdaptive)
                         Spacer()
-                        if language.1 == selectedLanguage {
+                        if code == selectedLanguage {
                             Image(systemName: "checkmark")
                                 .foregroundStyle(Colors.swissRed)
                         }
@@ -820,14 +801,14 @@ struct LanguagePickerSheet: View {
     private func settingsView(for languageCode: String) -> some View {
         List {
             Section {
-                ForEach(dialects, id: \.1) { dialect in
-                    Button(action: { selectedDialect = dialect.1 }) {
+                ForEach(dialectCodes, id: \.self) { code in
+                    Button(action: { selectedDialect = code }) {
                         HStack {
-                            Text(dialect.0)
+                            Text(L10n.dialectName(code))
                                 .font(Typography.bodyLarge)
                                 .foregroundStyle(Colors.textPrimaryAdaptive)
                             Spacer()
-                            if dialect.1 == selectedDialect {
+                            if code == selectedDialect {
                                 Image(systemName: "checkmark")
                                     .foregroundStyle(Colors.swissRed)
                             }
@@ -835,9 +816,9 @@ struct LanguagePickerSheet: View {
                     }
                 }
             } header: {
-                Text("Dialect")
+                Text(L10n.dialectTitle)
             } footer: {
-                Text("Select the regional dialect for your Swiss German translation.")
+                Text(L10n.dialectFooter)
             }
         }
     }
@@ -874,7 +855,7 @@ struct SubscriptionView: View {
                 VStack(spacing: Spacing.lg) {
                     // Current tier badge
                     HStack {
-                        Text("Current: \(storeService.currentTier.rawValue)")
+                        Text(L10n.currentPlan(storeService.currentTier.rawValue))
                             .font(Typography.labelMedium)
                             .foregroundStyle(Colors.textSecondaryAdaptive)
                             .padding(.horizontal, Spacing.md)
@@ -887,7 +868,7 @@ struct SubscriptionView: View {
 
                     // Billing toggle
                     HStack(spacing: Spacing.sm) {
-                        Text("Monthly")
+                        Text(L10n.monthly)
                             .font(Typography.labelMedium)
                             .foregroundStyle(isYearly ? Colors.textSecondaryAdaptive : Colors.swissRed)
 
@@ -895,12 +876,12 @@ struct SubscriptionView: View {
                             .labelsHidden()
                             .tint(Colors.swissRed)
 
-                        Text("Yearly")
+                        Text(L10n.yearly)
                             .font(Typography.labelMedium)
                             .foregroundStyle(isYearly ? Colors.swissRed : Colors.textSecondaryAdaptive)
 
                         if isYearly {
-                            Text("Save 20%")
+                            Text(L10n.save20)
                                 .font(Typography.caption)
                                 .foregroundStyle(.white)
                                 .padding(.horizontal, Spacing.xs)
@@ -913,11 +894,11 @@ struct SubscriptionView: View {
                     PlanCard(
                         name: "Helvetra+",
                         price: plusProduct?.displayPrice ?? (isYearly ? "CHF 4.99/month" : "CHF 7.99/month"),
-                        billingNote: isYearly ? "billed yearly" : nil,
+                        billingNote: isYearly ? L10n.billedYearly : nil,
                         features: [
-                            "20,000 characters per translation",
-                            "All dialects included",
-                            "Priority support"
+                            L10n.featureCharacters,
+                            L10n.featureDialects,
+                            L10n.featureSupport
                         ],
                         isCurrentPlan: storeService.currentTier == .plus,
                         isLoading: isPurchasing,
@@ -926,7 +907,7 @@ struct SubscriptionView: View {
 
                     // Restore purchases
                     Button(action: { Task { await restorePurchases() } }) {
-                        Text("Restore Purchases")
+                        Text(L10n.restorePurchases)
                             .font(Typography.labelMedium)
                             .foregroundStyle(Colors.textSecondaryAdaptive)
                     }
@@ -942,17 +923,17 @@ struct SubscriptionView: View {
                 }
                 .padding(.horizontal, Spacing.screenPadding)
             }
-            .navigationTitle("Upgrade")
+            .navigationTitle(L10n.subscriptionTitle)
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
-                    Button("Done") { dismiss() }
+                    Button(L10n.done) { dismiss() }
                 }
             }
-            .alert("Purchase Successful", isPresented: $showSuccess) {
-                Button("OK") { dismiss() }
+            .alert(L10n.purchaseSuccessTitle, isPresented: $showSuccess) {
+                Button(L10n.ok) { dismiss() }
             } message: {
-                Text("Thank you for upgrading! Your new plan is now active.")
+                Text(L10n.purchaseSuccessMessage)
             }
         }
     }
@@ -1033,7 +1014,7 @@ struct PlanCard: View {
             }
 
             if isCurrentPlan {
-                Text("Current Plan")
+                Text(L10n.currentPlanLabel)
                     .font(Typography.labelMedium)
                     .foregroundStyle(Colors.textSecondaryAdaptive)
                     .frame(maxWidth: .infinity)
@@ -1048,7 +1029,7 @@ struct PlanCard: View {
                         ProgressView()
                             .frame(maxWidth: .infinity)
                     } else {
-                        Text("Subscribe")
+                        Text(L10n.subscribe)
                             .frame(maxWidth: .infinity)
                     }
                 }
@@ -1087,26 +1068,26 @@ struct SettingsView: View {
         ScrollView {
             VStack(spacing: Spacing.lg) {
                 // Header
-                Text("Settings")
+                Text(L10n.settings)
                     .font(Typography.headingLarge)
                     .foregroundStyle(Colors.textPrimaryAdaptive)
                     .frame(maxWidth: .infinity, alignment: .leading)
                     .padding(.top, Spacing.md)
 
                 // Account section
-                SettingsSection(title: "Account") {
+                SettingsSection(title: L10n.accountTitle) {
                     if authService.isAuthenticated, let user = authService.currentUser {
                         // Signed in state
                         SettingsRow(
                             icon: "person.circle.fill",
                             title: user.email,
-                            subtitle: "\(storeService.currentTier.rawValue) Plan"
+                            subtitle: L10n.planName(storeService.currentTier.rawValue)
                         )
                     } else {
                         // Signed out state
                         SettingsRow(
                             icon: "person.circle",
-                            title: "\(storeService.currentTier.rawValue) Plan",
+                            title: L10n.planName(storeService.currentTier.rawValue),
                             subtitle: nil
                         )
                     }
@@ -1119,7 +1100,7 @@ struct SettingsView: View {
                             HStack {
                                 Image(systemName: "arrow.up.circle.fill")
                                     .foregroundStyle(Colors.swissRed)
-                                Text("Upgrade to Helvetra+")
+                                Text(L10n.upgrade)
                                     .font(Typography.bodyMedium)
                                     .foregroundStyle(Colors.swissRed)
                                 Spacer()
@@ -1138,7 +1119,7 @@ struct SettingsView: View {
                             HStack {
                                 Image(systemName: "rectangle.portrait.and.arrow.right")
                                     .foregroundStyle(Colors.textSecondaryAdaptive)
-                                Text("Sign Out")
+                                Text(L10n.signOut)
                                     .font(Typography.bodyMedium)
                                     .foregroundStyle(Colors.textPrimaryAdaptive)
                                 Spacer()
@@ -1149,14 +1130,14 @@ struct SettingsView: View {
                 }
 
                 // Preferences section
-                SettingsSection(title: "Preferences") {
+                SettingsSection(title: L10n.preferencesTitle) {
                     Toggle(isOn: $hapticsEnabled) {
                         HStack(spacing: Spacing.md) {
                             Image(systemName: "waveform")
                                 .font(.system(size: 18))
                                 .foregroundStyle(Colors.textSecondaryAdaptive)
                                 .frame(width: 24)
-                            Text("Haptic feedback")
+                            Text(L10n.hapticFeedback)
                                 .font(Typography.bodyMedium)
                                 .foregroundStyle(Colors.textPrimaryAdaptive)
                         }
@@ -1165,17 +1146,17 @@ struct SettingsView: View {
                 }
 
                 // About section
-                SettingsSection(title: "About") {
+                SettingsSection(title: L10n.aboutTitle) {
                     SettingsRow(
                         icon: "info.circle",
-                        title: "Version",
+                        title: L10n.version,
                         value: "\(appVersion) (\(buildNumber))"
                     )
 
                     Link(destination: URL(string: "https://helvetra.ch/privacy")!) {
                         SettingsRow(
                             icon: "hand.raised",
-                            title: "Privacy Policy",
+                            title: L10n.privacyPolicy,
                             showChevron: true
                         )
                     }
@@ -1183,7 +1164,7 @@ struct SettingsView: View {
                     Link(destination: URL(string: "https://helvetra.ch/terms")!) {
                         SettingsRow(
                             icon: "doc.text",
-                            title: "Terms of Service",
+                            title: L10n.termsOfService,
                             showChevron: true
                         )
                     }
@@ -1191,12 +1172,12 @@ struct SettingsView: View {
 
                 // Danger zone (only for authenticated users)
                 if authService.isAuthenticated {
-                    SettingsSection(title: "Danger Zone") {
+                    SettingsSection(title: L10n.dangerZoneTitle) {
                         Button(action: { showDeleteConfirmation = true }) {
                             HStack {
                                 Image(systemName: "trash")
                                     .foregroundStyle(.red)
-                                Text("Delete Account")
+                                Text(L10n.deleteAccount)
                                     .font(Typography.bodyMedium)
                                     .foregroundStyle(.red)
                                 Spacer()
@@ -1208,7 +1189,7 @@ struct SettingsView: View {
 
                 // Footer
                 VStack(spacing: Spacing.xs) {
-                    Text("Made with ❤️ in Switzerland")
+                    Text(L10n.madeInSwitzerland)
                         .font(Typography.caption)
                         .foregroundStyle(Colors.textSecondaryAdaptive)
                 }
@@ -1220,11 +1201,11 @@ struct SettingsView: View {
             SubscriptionView()
         }
         .confirmationDialog(
-            "Delete Account",
+            L10n.deleteAccountTitle,
             isPresented: $showDeleteConfirmation,
             titleVisibility: .visible
         ) {
-            Button("Delete Account", role: .destructive) {
+            Button(L10n.deleteAccountConfirm, role: .destructive) {
                 Task {
                     do {
                         try await authService.deleteAccount()
@@ -1234,9 +1215,9 @@ struct SettingsView: View {
                     }
                 }
             }
-            Button("Cancel", role: .cancel) {}
+            Button(L10n.cancel, role: .cancel) {}
         } message: {
-            Text("This will permanently delete your account and all associated data. This action cannot be undone.")
+            Text(L10n.deleteAccountMessage)
         }
         .onAppear {
             Task { await usageService.fetchUsage() }
@@ -1635,11 +1616,11 @@ enum TranslationError: LocalizedError {
     var errorDescription: String? {
         switch self {
         case .networkError:
-            return "Network connection failed"
+            return L10n.errorNetwork
         case .httpError(let code):
-            return "Server error (\(code))"
+            return L10n.errorServer(code)
         case .invalidResponse:
-            return "Invalid response from server"
+            return L10n.errorInvalidResponse
         case .apiError(_, let message):
             return message
         }

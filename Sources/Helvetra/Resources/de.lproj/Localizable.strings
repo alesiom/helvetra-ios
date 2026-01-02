@@ -1,0 +1,114 @@
+/*
+  Localizable.strings (German)
+  Helvetra
+*/
+
+// MARK: - Translation Screen
+
+"translation.placeholder.input" = "Zum Übersetzen hier tippen oder einfügen";
+"translation.placeholder.output" = "Übersetzung erscheint hier";
+"translation.status.translating" = "Übersetze...";
+"translation.button.paste" = "Einfügen";
+"translation.button.clear" = "Text löschen";
+"translation.button.copy" = "Übersetzung kopieren";
+"translation.button.share" = "Übersetzung teilen";
+"translation.toast.copied" = "In Zwischenablage kopiert";
+
+// MARK: - Language Selection
+
+"language.auto" = "Automatisch";
+"language.en" = "Englisch";
+"language.de" = "Deutsch";
+"language.fr" = "Französisch";
+"language.it" = "Italienisch";
+"language.gsw" = "Schweizerdeutsch";
+"language.rm" = "Rätoromanisch";
+
+"language.picker.title" = "Sprache wählen";
+"language.picker.source" = "Ausgangssprache: %@";
+"language.picker.target" = "Zielsprache: %@";
+"language.picker.source.detected" = "%@, automatisch erkannt";
+"language.picker.swap" = "Sprachen tauschen";
+"language.picker.change" = "Doppeltippen zum Ändern der %@";
+
+// MARK: - Dialects
+
+"dialect.title" = "Dialekt";
+"dialect.footer" = "Wähle den regionalen Dialekt für deine Schweizerdeutsch-Übersetzung.";
+"dialect.zurich" = "Zürich";
+"dialect.bern" = "Bern";
+"dialect.basel" = "Basel";
+"dialect.luzern" = "Luzern";
+"dialect.stgallen" = "St. Gallen";
+"dialect.wallis" = "Wallis";
+
+// MARK: - Settings
+
+"settings.title" = "Einstellungen";
+"settings.close" = "Einstellungen schliessen";
+"settings.open" = "Einstellungen öffnen";
+
+// Account
+"settings.account.title" = "Konto";
+"settings.account.plan" = "%@-Abo";
+"settings.account.upgrade" = "Auf Helvetra+ upgraden";
+"settings.account.signout" = "Abmelden";
+
+// Preferences
+"settings.preferences.title" = "Einstellungen";
+"settings.preferences.haptics" = "Haptisches Feedback";
+
+// About
+"settings.about.title" = "Über";
+"settings.about.version" = "Version";
+"settings.about.privacy" = "Datenschutz";
+"settings.about.terms" = "Nutzungsbedingungen";
+"settings.about.footer" = "Mit ❤️ in der Schweiz gemacht";
+
+// Danger Zone
+"settings.danger.title" = "Gefahrenzone";
+"settings.danger.delete" = "Konto löschen";
+"settings.danger.delete.title" = "Konto löschen";
+"settings.danger.delete.message" = "Dies löscht dein Konto und alle zugehörigen Daten unwiderruflich.";
+"settings.danger.delete.confirm" = "Konto löschen";
+"settings.danger.delete.cancel" = "Abbrechen";
+
+// MARK: - Subscription
+
+"subscription.title" = "Upgrade";
+"subscription.current" = "Aktuell: %@";
+"subscription.monthly" = "Monatlich";
+"subscription.yearly" = "Jährlich";
+"subscription.save" = "20% sparen";
+"subscription.billed.yearly" = "jährlich abgerechnet";
+"subscription.subscribe" = "Abonnieren";
+"subscription.current.plan" = "Aktuelles Abo";
+"subscription.restore" = "Käufe wiederherstellen";
+"subscription.success.title" = "Kauf erfolgreich";
+"subscription.success.message" = "Danke fürs Upgrade! Dein neues Abo ist jetzt aktiv.";
+
+// Features
+"subscription.feature.characters" = "20'000 Zeichen pro Übersetzung";
+"subscription.feature.dialects" = "Alle Dialekte inklusive";
+"subscription.feature.support" = "Prioritäts-Support";
+
+// MARK: - Usage
+
+"usage.period.weekly" = "Wöchentlich zurückgesetzt";
+"usage.period.monthly" = "Monatlich zurückgesetzt";
+
+// MARK: - Common
+
+"common.done" = "Fertig";
+"common.back" = "Zurück";
+"common.ok" = "OK";
+"common.cancel" = "Abbrechen";
+
+// MARK: - Errors
+
+"error.network" = "Netzwerkverbindung fehlgeschlagen";
+"error.server" = "Serverfehler (%d)";
+"error.invalid.response" = "Ungültige Serverantwort";
+"error.translation.failed" = "Übersetzung fehlgeschlagen";
+"error.verification.failed" = "Transaktionsverifizierung fehlgeschlagen";
+"error.purchase.failed" = "Kauf konnte nicht abgeschlossen werden";
