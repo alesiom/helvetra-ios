@@ -264,12 +264,17 @@ struct ContentView: View {
         Double(viewModel.sourceText.count) / Double(characterLimit) >= counterThreshold
     }
 
+    /// Whether source language was auto-detected.
+    private var isLanguageDetected: Bool {
+        selectedSourceLanguage == "auto" && viewModel.detectedLanguage != nil
+    }
+
     private var sourceLanguageName: String {
-        // Show detected language when auto-detect found a result
+        // Show detected language name when auto-detect found a result
         if selectedSourceLanguage == "auto",
            let detected = viewModel.detectedLanguage,
            let detectedName = languageNames[detected] {
-            return "Detected: \(detectedName)"
+            return detectedName
         }
         return languageNames[selectedSourceLanguage] ?? selectedSourceLanguage
     }
@@ -590,10 +595,17 @@ struct ContentView: View {
                     VStack(spacing: Spacing.sm) {
                         HStack(spacing: 0) {
                             Button(action: { showSourceLanguagePicker = true }) {
-                                Text(sourceLanguageName)
+                                HStack(spacing: 4) {
+                                    Text(sourceLanguageName)
+                                    if isLanguageDetected {
+                                        Image(systemName: "checkmark.circle.fill")
+                                            .font(.system(size: 10))
+                                            .foregroundStyle(Colors.swissRed.opacity(0.8))
+                                    }
+                                }
                             }
                             .buttonStyle(.glassPill)
-                            .accessibilityLabel("Source language: \(sourceLanguageName)")
+                            .accessibilityLabel("Source language: \(sourceLanguageName)\(isLanguageDetected ? ", auto-detected" : "")")
                             .accessibilityHint("Double tap to change source language")
 
                             Spacer()
