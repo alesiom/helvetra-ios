@@ -56,20 +56,27 @@ class UsageService: ObservableObject {
         isLoading = true
         defer { isLoading = false }
 
+        let isAuth = AuthService.shared.isAuthenticated
+        print("[Usage] Fetching usage, authenticated: \(isAuth)")
+
         do {
-            if AuthService.shared.isAuthenticated {
+            if isAuth {
                 try await fetchAuthenticatedUsage()
             } else {
                 try await fetchAnonymousUsage()
             }
+            print("[Usage] Updated: \(charactersUsed)/\(charactersLimit)")
         } catch {
-            print("Failed to fetch usage: \(error)")
+            print("[Usage] ERROR: Failed to fetch usage: \(error)")
         }
     }
 
     /// Fetch usage for authenticated users.
     private func fetchAuthenticatedUsage() async throws {
-        guard let accessToken = await AuthService.shared.getAccessToken() else { return }
+        guard let accessToken = await AuthService.shared.getAccessToken() else {
+            print("[Usage] ERROR: No access token for authenticated fetch")
+            return
+        }
 
         let url = URL(string: "\(baseURL)/subscription")!
         var request = URLRequest(url: url)
@@ -77,12 +84,27 @@ class UsageService: ObservableObject {
 
         let (data, response) = try await session.data(for: request)
 
-        guard let httpResponse = response as? HTTPURLResponse,
-              httpResponse.statusCode == 200 else {
+        guard let httpResponse = response as? HTTPURLResponse else {
+            print("[Usage] ERROR: Invalid response type")
             return
         }
 
+        print("[Usage] Backend /subscription returned HTTP \(httpResponse.statusCode)")
+
+        guard httpResponse.statusCode == 200 else {
+            let responseStr = String(data: data, encoding: .utf8) ?? "no data"
+            print("[Usage] ERROR: \(responseStr)")
+            return
+        }
+
+        // Debug: print raw response
+        if let responseStr = String(data: data, encoding: .utf8) {
+            print("[Usage] Raw response: \(responseStr)")
+        }
+
         let usage = try JSONDecoder().decode(AuthenticatedUsageResponse.self, from: data)
+        print("[Usage] Parsed: tier=\(usage.tier), limit=\(usage.characters_limit)")
+
         charactersUsed = usage.characters_used
         charactersLimit = usage.characters_limit
         charactersRemaining = usage.credits_remaining

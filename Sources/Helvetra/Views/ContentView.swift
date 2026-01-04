@@ -84,17 +84,25 @@ class StoreService: ObservableObject {
         switch result {
         case .success(let verification):
             let transaction = try checkVerified(verification)
+            print("[StoreKit] Purchase successful: \(transaction.productID)")
 
             // Verify with backend to sync subscription status
-            if AuthService.shared.isAuthenticated {
+            let isAuth = AuthService.shared.isAuthenticated
+            print("[StoreKit] User authenticated: \(isAuth)")
+
+            if isAuth {
                 await verifyWithBackend(verification: verification)
+            } else {
+                print("[StoreKit] Skipping backend verification - user not logged in")
             }
 
             await updatePurchasedProducts()
             await transaction.finish()
 
             // Refresh usage data to reflect new subscription
+            print("[StoreKit] Refreshing usage data...")
             await UsageService.shared.fetchUsage()
+            print("[StoreKit] Usage limit now: \(UsageService.shared.charactersLimit)")
 
         case .pending:
             break
@@ -182,15 +190,21 @@ class StoreService: ObservableObject {
 
     /// Verify a StoreKit transaction with the backend to sync subscription status.
     private func verifyWithBackend(verification: VerificationResult<StoreKit.Transaction>) async {
+        print("[StoreKit] Starting backend verification...")
+
         guard let accessToken = await AuthService.shared.getAccessToken() else {
-            print("Cannot verify transaction: no access token")
+            print("[StoreKit] ERROR: No access token available")
             return
         }
+        print("[StoreKit] Got access token")
 
         // Get the JWS representation from the verification result
         let jwsRepresentation = verification.jwsRepresentation
+        print("[StoreKit] JWS length: \(jwsRepresentation.count) chars")
 
         let url = URL(string: "\(baseURL)/subscription/apple/verify")!
+        print("[StoreKit] Calling: \(url)")
+
         var request = URLRequest(url: url)
         request.httpMethod = "POST"
         request.setValue("Bearer \(accessToken)", forHTTPHeaderField: "Authorization")
@@ -202,20 +216,27 @@ class StoreService: ObservableObject {
         do {
             let (data, response) = try await session.data(for: request)
 
-            guard let httpResponse = response as? HTTPURLResponse else { return }
+            guard let httpResponse = response as? HTTPURLResponse else {
+                print("[StoreKit] ERROR: Invalid response type")
+                return
+            }
+
+            print("[StoreKit] Backend response: HTTP \(httpResponse.statusCode)")
 
             if httpResponse.statusCode == 200 {
                 if let result = try? JSONDecoder().decode(AppleVerifyResponse.self, from: data),
                    result.success {
-                    print("Backend verified subscription: \(result.tier ?? "unknown")")
+                    print("[StoreKit] SUCCESS: Backend verified subscription as \(result.tier ?? "unknown")")
                 } else {
-                    print("Backend verification failed")
+                    let responseStr = String(data: data, encoding: .utf8) ?? "no data"
+                    print("[StoreKit] FAILED: Backend returned: \(responseStr)")
                 }
             } else {
-                print("Backend verification error: HTTP \(httpResponse.statusCode)")
+                let responseStr = String(data: data, encoding: .utf8) ?? "no data"
+                print("[StoreKit] ERROR: HTTP \(httpResponse.statusCode) - \(responseStr)")
             }
         } catch {
-            print("Failed to verify transaction with backend: \(error)")
+            print("[StoreKit] ERROR: Network request failed: \(error)")
         }
     }
 }
