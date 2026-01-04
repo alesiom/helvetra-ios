@@ -23,7 +23,7 @@ class StoreService: ObservableObject {
         var productId: String? {
             switch self {
             case .free: return nil
-            case .plus: return "ch.helvetra.plus.monthly"
+            case .plus: return "ch.helvetra.pro.monthly"
             }
         }
     }
@@ -36,13 +36,19 @@ class StoreService: ObservableObject {
     @Published private(set) var isLoading: Bool = false
 
     private var updateListenerTask: Task<Void, Error>?
+    private let baseURL = "https://helvetra.ch/api/v1"
+    private let session: URLSession
 
     private let productIDs: Set<String> = [
-        "ch.helvetra.plus.monthly",
-        "ch.helvetra.plus.yearly"
+        "ch.helvetra.pro.monthly",
+        "ch.helvetra.pro.yearly"
     ]
 
     private init() {
+        let config = URLSessionConfiguration.default
+        config.timeoutIntervalForRequest = 15
+        self.session = URLSession(configuration: config)
+
         updateListenerTask = listenForTransactions()
         Task { await loadProducts() }
 
@@ -78,8 +84,17 @@ class StoreService: ObservableObject {
         switch result {
         case .success(let verification):
             let transaction = try checkVerified(verification)
+
+            // Verify with backend to sync subscription status
+            if AuthService.shared.isAuthenticated {
+                await verifyWithBackend(verification: verification)
+            }
+
             await updatePurchasedProducts()
             await transaction.finish()
+
+            // Refresh usage data to reflect new subscription
+            await UsageService.shared.fetchUsage()
 
         case .pending:
             break
@@ -111,13 +126,22 @@ class StoreService: ObservableObject {
         updateCurrentTier()
     }
 
-    /// Listen for transaction updates.
+    /// Listen for transaction updates (renewals, etc.).
     private func listenForTransactions() -> Task<Void, Error> {
         Task.detached {
             for await result in Transaction.updates {
-                if case .verified(let transaction) = result {
+                switch result {
+                case .verified(let transaction):
+                    // Verify renewal with backend
+                    if await AuthService.shared.isAuthenticated {
+                        await self.verifyWithBackend(verification: result)
+                    }
                     await self.updatePurchasedProducts()
                     await transaction.finish()
+                    await UsageService.shared.fetchUsage()
+
+                case .unverified:
+                    break
                 }
             }
         }
@@ -136,7 +160,7 @@ class StoreService: ObservableObject {
     /// Update current tier based on purchases and backend subscription.
     private func updateCurrentTier() {
         // Check StoreKit purchases (App Store subscriptions)
-        if purchasedProductIDs.contains(where: { $0.contains("plus") }) {
+        if purchasedProductIDs.contains(where: { $0.contains("pro") }) {
             currentTier = .plus
             return
         }
@@ -155,6 +179,53 @@ class StoreService: ObservableObject {
     func syncFromAuth() {
         updateCurrentTier()
     }
+
+    /// Verify a StoreKit transaction with the backend to sync subscription status.
+    private func verifyWithBackend(verification: VerificationResult<StoreKit.Transaction>) async {
+        guard let accessToken = await AuthService.shared.getAccessToken() else {
+            print("Cannot verify transaction: no access token")
+            return
+        }
+
+        // Get the JWS representation from the verification result
+        let jwsRepresentation = verification.jwsRepresentation
+
+        let url = URL(string: "\(baseURL)/subscription/apple/verify")!
+        var request = URLRequest(url: url)
+        request.httpMethod = "POST"
+        request.setValue("Bearer \(accessToken)", forHTTPHeaderField: "Authorization")
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+
+        let body = ["signed_transaction": jwsRepresentation]
+        request.httpBody = try? JSONEncoder().encode(body)
+
+        do {
+            let (data, response) = try await session.data(for: request)
+
+            guard let httpResponse = response as? HTTPURLResponse else { return }
+
+            if httpResponse.statusCode == 200 {
+                if let result = try? JSONDecoder().decode(AppleVerifyResponse.self, from: data),
+                   result.success {
+                    print("Backend verified subscription: \(result.tier ?? "unknown")")
+                } else {
+                    print("Backend verification failed")
+                }
+            } else {
+                print("Backend verification error: HTTP \(httpResponse.statusCode)")
+            }
+        } catch {
+            print("Failed to verify transaction with backend: \(error)")
+        }
+    }
+}
+
+/// Response from backend Apple verification endpoint.
+private struct AppleVerifyResponse: Decodable {
+    let success: Bool
+    let tier: String?
+    let expires_at: String?
+    let message: String?
 }
 
 /// Store-related errors.

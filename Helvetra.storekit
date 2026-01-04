@@ -87,7 +87,7 @@
               "locale" : "en_CH"
             }
           ],
-          "productID" : "ch.helvetra.plus.monthly",
+          "productID" : "ch.helvetra.pro.monthly",
           "recurringSubscriptionPeriod" : "P1M",
           "referenceName" : "Helvetra+ Monthly",
           "subscriptionGroupID" : "helvetra_plus",
@@ -112,7 +112,7 @@
               "locale" : "en_CH"
             }
           ],
-          "productID" : "ch.helvetra.plus.yearly",
+          "productID" : "ch.helvetra.pro.yearly",
           "recurringSubscriptionPeriod" : "P1Y",
           "referenceName" : "Helvetra+ Yearly",
           "subscriptionGroupID" : "helvetra_plus",
