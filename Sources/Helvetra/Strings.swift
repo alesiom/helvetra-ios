@@ -94,7 +94,7 @@ enum L10n {
 
     // Features
     static let featureCharacters = NSLocalizedString("subscription.feature.characters", comment: "")
-    static let featureDialects = NSLocalizedString("subscription.feature.dialects", comment: "")
+    static let featurePriority = NSLocalizedString("subscription.feature.priority", comment: "")
     static let featureSupport = NSLocalizedString("subscription.feature.support", comment: "")
 
     // MARK: - Usage

@@ -897,7 +897,7 @@ struct SubscriptionView: View {
                         billingNote: isYearly ? L10n.billedYearly : nil,
                         features: [
                             L10n.featureCharacters,
-                            L10n.featureDialects,
+                            L10n.featurePriority,
                             L10n.featureSupport
                         ],
                         isCurrentPlan: storeService.currentTier == .plus,

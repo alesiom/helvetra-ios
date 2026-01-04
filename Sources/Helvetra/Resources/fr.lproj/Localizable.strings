@@ -79,7 +79,7 @@
 "subscription.current" = "Actuel : %@";
 "subscription.monthly" = "Mensuel";
 "subscription.yearly" = "Annuel";
-"subscription.save" = "Économisez 20%";
+"subscription.save" = "Économisez 40%";
 "subscription.billed.yearly" = "facturé annuellement";
 "subscription.subscribe" = "S'abonner";
 "subscription.current.plan" = "Forfait actuel";
@@ -88,9 +88,9 @@
 "subscription.success.message" = "Merci pour votre mise à niveau ! Votre nouveau forfait est maintenant actif.";
 
 // Features
-"subscription.feature.characters" = "20 000 caractères par traduction";
-"subscription.feature.dialects" = "Tous les dialectes inclus";
-"subscription.feature.support" = "Support prioritaire";
+"subscription.feature.characters" = "500 000 caractères par mois";
+"subscription.feature.priority" = "Traitement prioritaire";
+"subscription.feature.support" = "Soutenir le développement suisse";
 
 // MARK: - Usage
 

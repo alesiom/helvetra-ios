@@ -79,7 +79,7 @@
 "subscription.current" = "Current: %@";
 "subscription.monthly" = "Monthly";
 "subscription.yearly" = "Yearly";
-"subscription.save" = "Save 20%";
+"subscription.save" = "Save 40%";
 "subscription.billed.yearly" = "billed yearly";
 "subscription.subscribe" = "Subscribe";
 "subscription.current.plan" = "Current Plan";
@@ -88,9 +88,9 @@
 "subscription.success.message" = "Thank you for upgrading! Your new plan is now active.";
 
 // Features
-"subscription.feature.characters" = "20,000 characters per translation";
-"subscription.feature.dialects" = "All dialects included";
-"subscription.feature.support" = "Priority support";
+"subscription.feature.characters" = "500,000 characters per month";
+"subscription.feature.priority" = "Priority processing";
+"subscription.feature.support" = "Support Swiss development";
 
 // MARK: - Usage
 
