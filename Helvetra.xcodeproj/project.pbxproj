@@ -42,6 +42,7 @@
 		DC9E1D0A855A0F75AE0D99C3 /* HelvetraApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HelvetraApp.swift; sourceTree = "<group>"; };
 		E52800E38DDA407998236848 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		ED576CDF08E6F109DF5F1933 /* GlassEffect.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GlassEffect.swift; sourceTree = "<group>"; };
+		FAB69E1A2F0AFCB9008F8076 /* Helvetra.storekit */ = {isa = PBXFileReference; lastKnownFileType = text; path = Helvetra.storekit; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXGroup section */
@@ -104,6 +105,7 @@
 		C555DFAE7F629788D816A359 = {
 			isa = PBXGroup;
 			children = (
+				FAB69E1A2F0AFCB9008F8076 /* Helvetra.storekit */,
 				D0363059A86E424326C78EB6 /* Helvetra */,
 				D19B53955B48A75FDAAD0FBB /* Products */,
 			);
