@@ -115,9 +115,23 @@ class StoreService: ObservableObject {
         }
     }
 
-    /// Restore previous purchases.
+    /// Restore previous purchases and sync with backend.
     func restorePurchases() async {
+        print("[StoreKit] Restoring purchases...")
+
+        // Sync any existing entitlements with backend
+        if AuthService.shared.isAuthenticated {
+            for await result in Transaction.currentEntitlements {
+                if case .verified = result {
+                    print("[StoreKit] Found entitlement, verifying with backend...")
+                    await verifyWithBackend(verification: result)
+                }
+            }
+        }
+
         await updatePurchasedProducts()
+        await UsageService.shared.fetchUsage()
+        print("[StoreKit] Restore complete, limit: \(UsageService.shared.charactersLimit)")
     }
 
     /// Update the set of purchased products.
@@ -186,6 +200,28 @@ class StoreService: ObservableObject {
     /// Sync tier from backend auth state. Call when auth state changes.
     func syncFromAuth() {
         updateCurrentTier()
+
+        // If user just logged in, sync any existing StoreKit purchases with backend
+        if AuthService.shared.isAuthenticated {
+            Task {
+                await syncStoreKitWithBackend()
+            }
+        }
+    }
+
+    /// Sync existing StoreKit entitlements with backend (called after login).
+    private func syncStoreKitWithBackend() async {
+        print("[StoreKit] Syncing existing entitlements with backend after login...")
+
+        for await result in Transaction.currentEntitlements {
+            if case .verified = result {
+                print("[StoreKit] Found existing entitlement, verifying...")
+                await verifyWithBackend(verification: result)
+            }
+        }
+
+        await UsageService.shared.fetchUsage()
+        print("[StoreKit] Sync complete, limit: \(UsageService.shared.charactersLimit)")
     }
 
     /// Verify a StoreKit transaction with the backend to sync subscription status.
