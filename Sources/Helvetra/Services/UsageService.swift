@@ -1,3 +1,4 @@
+import Combine
 import Foundation
 
 /// Tracks character usage against subscription limits.
@@ -36,6 +37,8 @@ class UsageService: ObservableObject {
         return periodType == "weekly" ? "Resets weekly" : "Resets monthly"
     }
 
+    private var storeServiceObserver: AnyCancellable?
+
     private init() {
         let config = URLSessionConfiguration.default
         config.timeoutIntervalForRequest = 10
@@ -49,15 +52,35 @@ class UsageService: ObservableObject {
         ) { [weak self] _ in
             Task { await self?.fetchUsage() }
         }
+
+        // Listen for StoreKit tier changes to refresh usage
+        storeServiceObserver = StoreService.shared.$currentTier
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] _ in
+                Task { await self?.fetchUsage() }
+            }
     }
 
-    /// Fetch current usage from backend.
+    /// Fetch current usage, prioritizing local StoreKit entitlements.
     func fetchUsage() async {
         isLoading = true
         defer { isLoading = false }
 
+        // First, check if user has an active StoreKit subscription
+        // This takes priority over backend - Apple already verified the purchase
+        let storeKitTier = await StoreService.shared.currentTier
+        print("[Usage] StoreKit tier: \(storeKitTier.rawValue)")
+
+        if storeKitTier == .plus {
+            // User has active StoreKit subscription - trust it
+            applyStoreKitSubscription()
+            print("[Usage] Using StoreKit subscription limits: \(charactersLimit)")
+            return
+        }
+
+        // No StoreKit subscription - check backend
         let isAuth = AuthService.shared.isAuthenticated
-        print("[Usage] Fetching usage, authenticated: \(isAuth)")
+        print("[Usage] No StoreKit subscription, checking backend (authenticated: \(isAuth))")
 
         do {
             if isAuth {
@@ -69,6 +92,19 @@ class UsageService: ObservableObject {
         } catch {
             print("[Usage] ERROR: Failed to fetch usage: \(error)")
         }
+    }
+
+    /// Apply local StoreKit subscription limits (500k/month).
+    private func applyStoreKitSubscription() {
+        // Pro tier limits (matches backend tiers.py)
+        charactersLimit = 500_000
+        charactersRemaining = charactersLimit - charactersUsed
+        periodType = "monthly"
+
+        // Reset date is approximately 1 month from now
+        // (exact date would come from StoreKit transaction, but this is a reasonable default)
+        let calendar = Calendar.current
+        resetAt = calendar.date(byAdding: .month, value: 1, to: Date())
     }
 
     /// Fetch usage for authenticated users.
