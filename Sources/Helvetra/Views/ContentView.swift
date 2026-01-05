@@ -572,6 +572,14 @@ struct ContentView: View {
                                             syncViewModelSettings()
                                             viewModel.sourceTextChanged()
                                         }
+                                        .onChange(of: selectedSourceLanguage) { _, _ in
+                                            syncViewModelSettings()
+                                            viewModel.retranslate()
+                                        }
+                                        .onChange(of: selectedTargetLanguage) { _, _ in
+                                            syncViewModelSettings()
+                                            viewModel.retranslate()
+                                        }
                                         .onChange(of: isSourceFocused) { _, focused in
                                             if focused && isSettingsOpen {
                                                 withAnimation(.spring(response: 0.3, dampingFraction: 0.9)) {
@@ -1568,6 +1576,25 @@ class TranslationViewModel: ObservableObject {
         errorMessage = nil
         detectedLanguage = nil
         isTranslating = false
+    }
+
+    /// Re-translate with current settings (called when language changes).
+    func retranslate() {
+        debounceTask?.cancel()
+
+        guard !sourceText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
+            return
+        }
+
+        // Short debounce to handle rapid language switching
+        debounceTask = Task {
+            do {
+                try await Task.sleep(nanoseconds: 100_000_000) // 100ms
+                await performTranslation()
+            } catch {
+                // Cancelled
+            }
+        }
     }
 
     private func performTranslation() async {
