@@ -98,7 +98,12 @@ class UsageService: ObservableObject {
     private func applyStoreKitSubscription() {
         // Pro tier limits (matches backend tiers.py)
         charactersLimit = 500_000
-        charactersRemaining = charactersLimit - charactersUsed
+
+        // New subscription = fresh usage counter
+        // Previous free tier usage doesn't carry over
+        charactersUsed = 0
+        charactersRemaining = charactersLimit
+
         periodType = "monthly"
 
         // Reset date is approximately 1 month from now
