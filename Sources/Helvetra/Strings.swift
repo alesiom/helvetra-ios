@@ -44,6 +44,12 @@ enum L10n {
         NSLocalizedString("dialect.\(code)", comment: "")
     }
 
+    // MARK: - Formality
+
+    static let formalityTitle = NSLocalizedString("formality.title", comment: "")
+    static let formalityFormal = NSLocalizedString("formality.formal", comment: "")
+    static let formalityInformal = NSLocalizedString("formality.informal", comment: "")
+
     // MARK: - Settings
 
     static let settings = NSLocalizedString("settings.title", comment: "")
@@ -67,6 +73,8 @@ enum L10n {
     static let version = NSLocalizedString("settings.about.version", comment: "")
     static let privacyPolicy = NSLocalizedString("settings.about.privacy", comment: "")
     static let termsOfService = NSLocalizedString("settings.about.terms", comment: "")
+    static let sendFeedback = NSLocalizedString("settings.about.feedback", comment: "")
+    static let emailCopied = NSLocalizedString("settings.about.feedback.copied", comment: "")
     static let madeInSwitzerland = NSLocalizedString("settings.about.footer", comment: "")
 
     // Danger Zone

@@ -1,4 +1,4 @@
-# App Store Listing Proposal
+# App Store Listing
 
 ## Shared Settings
 
@@ -10,8 +10,9 @@
 | **Helvetra+ Monthly** | CHF 7.99 |
 | **Helvetra+ Yearly** | CHF 59.88 (CHF 4.99/month) |
 | **Privacy Policy URL** | https://helvetra.ch/privacy |
-| **Support URL** | https://helvetra.ch |
+| **Support URL** | https://helvetra.ch/support |
 | **Marketing URL** | https://helvetra.ch |
+| **Copyright** | 2026 Helvetra |
 
 ---
 
@@ -21,23 +22,20 @@
 **`Helvetra - Swiss Translator`** (26 chars)
 
 ### Subtitle (30 chars max)
-**`Swiss German & 5 Languages`** (26 chars)
+**`Private. Swiss. Simple.`** (23 chars)
 
 ### Keywords (100 chars max)
 ```
-swiss german,translate,dialect,zürich,bern,schweizerdeutsch,übersetzer,privacy,romansh,switzerland
+dialect,zürich,bern,basel,mundart,secure,datenschutz,romansch,deepl,google,offline,wallis,luzern
 ```
-(98 chars)
+(96 chars)
 
 ### Description
 ```
-The very Swiss translation app. Translate between German, French, Italian, English, Romansh — and Swiss German dialects.
-
-YOUR WORDS NEVER LEAVE SWITZERLAND
-Unlike Google Translate (US servers) or DeepL (EU servers), Helvetra runs entirely on Swiss infrastructure. Your translations are processed in Swiss data centers powered by 100% renewable energy. No data storage. No AI training on your texts.
+Your translations never leave Switzerland. Unlike Google or DeepL, Helvetra runs 100% on Swiss servers. No tracking. No data storage. Just private, accurate translation.
 
 SWISS GERMAN THAT ACTUALLY WORKS
-Helvetra is the only translator that understands Swiss German dialects:
+The only translator that understands Swiss German dialects:
 • Zürich
 • Bern
 • Basel
@@ -51,7 +49,7 @@ FORMAL OR INFORMAL
 Choose between formal (Sie/Vous/Lei) and informal (du/tu) modes. Perfect for business emails or casual messages.
 
 POWERED BY SWISS AI
-Built on Apertus, the open-source AI model developed by ETH Zurich and EPFL. Swiss engineering, Swiss values.
+Built on Apertus, the open-source AI developed by ETH Zurich and EPFL. Swiss engineering, Swiss values, 100% renewable energy.
 
 SIMPLE BY DESIGN
 One purpose, done well. No chat history. No tracking. No bloat. Just fast, accurate translation.
@@ -61,12 +59,7 @@ FREE TO USE
 • Helvetra+ for power users: 500,000 characters
 
 SUPPORTED LANGUAGES
-• German ↔ Swiss German
-• French ↔ Swiss German
-• Italian ↔ Swiss German
-• English ↔ Swiss German
-• Romansh ↔ Swiss German
-• All combinations between DE, FR, IT, EN, RM
+German, French, Italian, English, Romansh, Swiss German — all combinations.
 
 Questions? Contact us at gruezi@helvetra.ch
 
@@ -81,23 +74,20 @@ Made with ❤️ in Switzerland
 **`Helvetra - Schweizer Übersetzer`** (30 chars)
 
 ### Subtitle (30 chars max)
-**`Schweizerdeutsch & 5 Sprachen`** (29 chars)
+**`Privat. Schweizerisch. Einfach.`** (30 chars)
 
 ### Keywords (100 chars max)
 ```
-schweizerdeutsch,übersetzer,dialekt,zürich,bern,mundart,datenschutz,rätoromanisch,basel,privatsphäre
+mundart,dialekt,züritüütsch,bärndütsch,datenschutz,sicher,deepl,google,offline,aargau,graubünden
 ```
-(100 chars)
+(97 chars)
 
 ### Description
 ```
-Die urchig schweizerische Übersetzungs-App. Übersetze zwischen Deutsch, Französisch, Italienisch, Englisch, Rätoromanisch und Schweizerdeutsch.
-
-DEINE WÖRTER VERLASSEN DIE SCHWEIZ NIE
-Anders als Google Translate (US-Server) oder DeepL (EU-Server) läuft Helvetra komplett auf Schweizer Infrastruktur. Deine Übersetzungen werden in Schweizer Rechenzentren verarbeitet, die mit 100% erneuerbarer Energie betrieben werden. Keine Datenspeicherung. Kein KI-Training mit deinen Texten.
+Deine Übersetzungen verlassen die Schweiz nie. Anders als Google oder DeepL läuft Helvetra zu 100% auf Schweizer Servern. Kein Tracking. Keine Datenspeicherung. Einfach private, präzise Übersetzung.
 
 SCHWEIZERDEUTSCH, DAS WIRKLICH FUNKTIONIERT
-Helvetra ist der einzige Übersetzer, der Schweizer Dialekte versteht:
+Der einzige Übersetzer, der Schweizer Dialekte versteht:
 • Zürich
 • Bern
 • Basel
@@ -105,13 +95,13 @@ Helvetra ist der einzige Übersetzer, der Schweizer Dialekte versteht:
 • St. Gallen
 • Wallis
 
-Übersetze aus jeder Sprache in authentisches regionales Schweizerdeutsch, oder zwischen Dialekten.
+Übersetze aus jeder Sprache in authentisches regionales Schweizerdeutsch — oder zwischen Dialekten.
 
 FÖRMLICH ODER INFORMELL
 Wähle zwischen Sie und du. Perfekt für Geschäfts-E-Mails oder lockere Nachrichten.
 
 SCHWEIZER KI
-Basierend auf Apertus, dem Open-Source KI-Modell von ETH Zürich und EPFL. Schweizer Ingenieurskunst, Schweizer Werte.
+Basierend auf Apertus, der Open-Source-KI von ETH Zürich und EPFL. Schweizer Ingenieurskunst, Schweizer Werte, 100% erneuerbare Energie.
 
 EINFACH GEHALTEN
 Ein Zweck, gut gemacht. Kein Chat-Verlauf. Kein Tracking. Kein Ballast. Einfach schnelle, präzise Übersetzung.
@@ -121,12 +111,7 @@ GRATIS NUTZBAR
 • Helvetra+ für Power-User: 500'000 Zeichen
 
 UNTERSTÜTZTE SPRACHEN
-• Deutsch ↔ Schweizerdeutsch
-• Französisch ↔ Schweizerdeutsch
-• Italienisch ↔ Schweizerdeutsch
-• Englisch ↔ Schweizerdeutsch
-• Rätoromanisch ↔ Schweizerdeutsch
-• Alle Kombinationen zwischen DE, FR, IT, EN, RM
+Deutsch, Französisch, Italienisch, Englisch, Rätoromanisch, Schweizerdeutsch — alle Kombinationen.
 
 Fragen? Kontaktiere uns unter gruezi@helvetra.ch
 
@@ -141,52 +126,44 @@ Mit ❤️ in der Schweiz gemacht
 **`Helvetra - Traducteur Suisse`** (28 chars)
 
 ### Subtitle (30 chars max)
-**`Suisse allemand & 5 langues`** (27 chars)
+**`Privé. Suisse. Simple.`** (21 chars)
 
 ### Keywords (100 chars max)
 ```
-suisse allemand,traducteur,dialecte,zurich,berne,romanche,confidentialité,traduire,bâle,privé
+dialecte,zurich,berne,bâle,romanche,confidentiel,sécurisé,deepl,google,offline,valais,lucerne
 ```
-(93 chars)
+(94 chars)
 
 ### Description
 ```
-L'application de traduction typiquement suisse. Traduisez entre l'allemand, le français, l'italien, l'anglais, le romanche et le suisse allemand.
-
-VOS MOTS NE QUITTENT JAMAIS LA SUISSE
-Contrairement à Google Translate (serveurs US) ou DeepL (serveurs EU), Helvetra fonctionne entièrement sur une infrastructure suisse. Vos traductions sont traitées dans des centres de données suisses alimentés à 100% par des énergies renouvelables. Aucun stockage de données. Aucun entraînement IA avec vos textes.
+Vos traductions ne quittent jamais la Suisse. Contrairement à Google ou DeepL, Helvetra fonctionne à 100% sur des serveurs suisses. Pas de tracking. Pas de stockage. Juste une traduction privée et précise.
 
 LE SUISSE ALLEMAND QUI FONCTIONNE VRAIMENT
-Helvetra est le seul traducteur qui comprend les dialectes suisses allemands:
+Le seul traducteur qui comprend les dialectes suisses allemands:
 • Zürich
 • Berne
 • Bâle
 • Lucerne
-• St-Gall
+• Saint-Gall
 • Valais
 
-Traduisez depuis n'importe quelle langue vers un suisse allemand régional authentique, ou entre dialectes.
+Traduisez depuis n'importe quelle langue vers un suisse allemand régional authentique — ou entre dialectes.
 
 FORMEL OU INFORMEL
 Choisissez entre le vouvoiement et le tutoiement. Parfait pour les e-mails professionnels ou les messages décontractés.
 
 PROPULSÉ PAR L'IA SUISSE
-Basé sur Apertus, le modèle IA open-source développé par l'ETH Zurich et l'EPFL. Ingénierie suisse, valeurs suisses.
+Basé sur Apertus, l'IA open-source développée par l'ETH Zurich et l'EPFL. Ingénierie suisse, valeurs suisses, 100% énergie renouvelable.
 
 SIMPLE PAR CONCEPTION
-Un seul but, bien fait. Pas d'historique de chat. Pas de tracking. Pas de superflu. Juste une traduction rapide et précise.
+Un seul but, bien fait. Pas d'historique. Pas de tracking. Pas de superflu. Juste une traduction rapide et précise.
 
 GRATUIT
 • 20'000 caractères par mois gratuits
 • Helvetra+ pour les utilisateurs intensifs: 500'000 caractères
 
 LANGUES SUPPORTÉES
-• Allemand ↔ Suisse allemand
-• Français ↔ Suisse allemand
-• Italien ↔ Suisse allemand
-• Anglais ↔ Suisse allemand
-• Romanche ↔ Suisse allemand
-• Toutes les combinaisons entre DE, FR, IT, EN, RM
+Allemand, français, italien, anglais, romanche, suisse allemand — toutes les combinaisons.
 
 Des questions? Contactez-nous à gruezi@helvetra.ch
 
@@ -201,23 +178,20 @@ Fait avec ❤️ en Suisse
 **`Helvetra - Traduttore Svizzero`** (30 chars)
 
 ### Subtitle (30 chars max)
-**`Svizzero tedesco & 5 lingue`** (27 chars)
+**`Privato. Svizzero. Semplice.`** (27 chars)
 
 ### Keywords (100 chars max)
 ```
-svizzero tedesco,traduttore,dialetto,zurigo,berna,romancio,privacy,tradurre,basilea,svizzera
+dialetto,zurigo,berna,basilea,romancio,sicuro,privacy,deepl,google,offline,vallese,lucerna
 ```
-(92 chars)
+(91 chars)
 
 ### Description
 ```
-L'app di traduzione tipicamente svizzera. Traduci tra tedesco, francese, italiano, inglese, romancio e svizzero tedesco.
-
-LE TUE PAROLE NON LASCIANO MAI LA SVIZZERA
-A differenza di Google Translate (server USA) o DeepL (server UE), Helvetra funziona interamente su infrastruttura svizzera. Le tue traduzioni vengono elaborate in data center svizzeri alimentati al 100% da energia rinnovabile. Nessuna memorizzazione dei dati. Nessun addestramento IA con i tuoi testi.
+Le tue traduzioni non lasciano mai la Svizzera. A differenza di Google o DeepL, Helvetra funziona al 100% su server svizzeri. Nessun tracking. Nessuna memorizzazione. Solo traduzione privata e precisa.
 
 LO SVIZZERO TEDESCO CHE FUNZIONA DAVVERO
-Helvetra è l'unico traduttore che capisce i dialetti svizzero tedeschi:
+L'unico traduttore che capisce i dialetti svizzero tedeschi:
 • Zurigo
 • Berna
 • Basilea
@@ -225,28 +199,23 @@ Helvetra è l'unico traduttore che capisce i dialetti svizzero tedeschi:
 • San Gallo
 • Vallese
 
-Traduci da qualsiasi lingua in autentico svizzero tedesco regionale, o tra dialetti.
+Traduci da qualsiasi lingua in autentico svizzero tedesco regionale — o tra dialetti.
 
 FORMALE O INFORMALE
 Scegli tra il Lei e il tu. Perfetto per e-mail di lavoro o messaggi informali.
 
 BASATO SU IA SVIZZERA
-Costruito su Apertus, il modello IA open-source sviluppato dall'ETH di Zurigo e dall'EPFL. Ingegneria svizzera, valori svizzeri.
+Costruito su Apertus, l'IA open-source sviluppata dall'ETH di Zurigo e dall'EPFL. Ingegneria svizzera, valori svizzeri, 100% energia rinnovabile.
 
 SEMPLICE PER DESIGN
-Uno scopo, fatto bene. Nessuna cronologia chat. Nessun tracciamento. Nessun eccesso. Solo traduzione veloce e precisa.
+Uno scopo, fatto bene. Nessuna cronologia. Nessun tracciamento. Nessun eccesso. Solo traduzione veloce e precisa.
 
 GRATUITO
 • 20'000 caratteri al mese gratis
 • Helvetra+ per utenti intensivi: 500'000 caratteri
 
 LINGUE SUPPORTATE
-• Tedesco ↔ Svizzero tedesco
-• Francese ↔ Svizzero tedesco
-• Italiano ↔ Svizzero tedesco
-• Inglese ↔ Svizzero tedesco
-• Romancio ↔ Svizzero tedesco
-• Tutte le combinazioni tra DE, FR, IT, EN, RM
+Tedesco, francese, italiano, inglese, romancio, svizzero tedesco — tutte le combinazioni.
 
 Domande? Contattaci a gruezi@helvetra.ch
 

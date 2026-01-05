@@ -862,9 +862,11 @@ struct LanguagePickerSheet: View {
     let dialectCodes = ["zurich", "bern", "basel", "luzern", "stgallen", "wallis"]
 
     private let languagesWithDialect: Set<String> = ["gsw"]
+    private let languagesWithFormality: Set<String> = ["de", "fr", "it", "gsw"]
 
     private var showingSettings: Bool { pendingLanguage != nil }
     private var needsDialect: Bool { languagesWithDialect.contains(pendingLanguage ?? "") }
+    private var needsFormality: Bool { languagesWithFormality.contains(pendingLanguage ?? "") }
 
     var body: some View {
         NavigationStack {
@@ -936,32 +938,68 @@ struct LanguagePickerSheet: View {
 
     private func settingsView(for languageCode: String) -> some View {
         List {
-            Section {
-                ForEach(dialectCodes, id: \.self) { code in
-                    Button(action: { selectedDialect = code }) {
+            // Formality section (for DE, FR, IT, GSW)
+            if languagesWithFormality.contains(languageCode) {
+                Section {
+                    Button(action: { selectedFormality = "formal" }) {
                         HStack {
-                            Text(L10n.dialectName(code))
+                            Text(L10n.formalityFormal)
                                 .font(Typography.bodyLarge)
                                 .foregroundStyle(Colors.textPrimaryAdaptive)
                             Spacer()
-                            if code == selectedDialect {
+                            if selectedFormality == "formal" {
                                 Image(systemName: "checkmark")
                                     .foregroundStyle(Colors.swissRed)
                             }
                         }
                     }
+                    Button(action: { selectedFormality = "informal" }) {
+                        HStack {
+                            Text(L10n.formalityInformal)
+                                .font(Typography.bodyLarge)
+                                .foregroundStyle(Colors.textPrimaryAdaptive)
+                            Spacer()
+                            if selectedFormality == "informal" {
+                                Image(systemName: "checkmark")
+                                    .foregroundStyle(Colors.swissRed)
+                            }
+                        }
+                    }
+                } header: {
+                    Text(L10n.formalityTitle)
                 }
-            } header: {
-                Text(L10n.dialectTitle)
-            } footer: {
-                Text(L10n.dialectFooter)
+            }
+
+            // Dialect section (for GSW only)
+            if languagesWithDialect.contains(languageCode) {
+                Section {
+                    ForEach(dialectCodes, id: \.self) { code in
+                        Button(action: { selectedDialect = code }) {
+                            HStack {
+                                Text(L10n.dialectName(code))
+                                    .font(Typography.bodyLarge)
+                                    .foregroundStyle(Colors.textPrimaryAdaptive)
+                                Spacer()
+                                if code == selectedDialect {
+                                    Image(systemName: "checkmark")
+                                        .foregroundStyle(Colors.swissRed)
+                                }
+                            }
+                        }
+                    }
+                } header: {
+                    Text(L10n.dialectTitle)
+                } footer: {
+                    Text(L10n.dialectFooter)
+                }
             }
         }
     }
 
     private func selectLanguage(_ code: String) {
         HapticService.selection()
-        if languagesWithDialect.contains(code) {
+        // Show settings screen for languages with formality or dialect options
+        if languagesWithFormality.contains(code) || languagesWithDialect.contains(code) {
             pendingLanguage = code
         } else {
             selectedLanguage = code
@@ -1191,6 +1229,7 @@ struct SettingsView: View {
     @ObservedObject private var usageService = UsageService.shared
     @State private var showSubscription: Bool = false
     @State private var showDeleteConfirmation: Bool = false
+    @State private var showEmailCopied: Bool = false
 
     private var appVersion: String {
         Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "1.0"
@@ -1304,6 +1343,14 @@ struct SettingsView: View {
                             showChevron: true
                         )
                     }
+
+                    Button(action: openFeedbackEmail) {
+                        SettingsRow(
+                            icon: "envelope",
+                            title: L10n.sendFeedback,
+                            showChevron: true
+                        )
+                    }
                 }
 
                 // Danger zone (only for authenticated users)
@@ -1357,6 +1404,25 @@ struct SettingsView: View {
         }
         .onAppear {
             Task { await usageService.fetchUsage() }
+        }
+        .alert(L10n.sendFeedback, isPresented: $showEmailCopied) {
+            Button(L10n.ok, role: .cancel) {}
+        } message: {
+            Text(L10n.emailCopied)
+        }
+    }
+
+    /// Opens mail app for feedback, or copies email if unavailable.
+    private func openFeedbackEmail() {
+        let email = "gruezi@helvetra.ch"
+        guard let url = URL(string: "mailto:\(email)?subject=Helvetra%20App%20Feedback") else { return }
+
+        if UIApplication.shared.canOpenURL(url) {
+            UIApplication.shared.open(url)
+        } else {
+            UIPasteboard.general.string = email
+            showEmailCopied = true
+            HapticService.success()
         }
     }
 }

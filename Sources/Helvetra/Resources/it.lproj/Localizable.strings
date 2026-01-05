@@ -42,6 +42,12 @@
 "dialect.stgallen" = "San Gallo";
 "dialect.wallis" = "Vallese";
 
+// MARK: - Formality
+
+"formality.title" = "Tono";
+"formality.formal" = "Formale";
+"formality.informal" = "Informale";
+
 // MARK: - Settings
 
 "settings.title" = "Impostazioni";
@@ -63,6 +69,8 @@
 "settings.about.version" = "Versione";
 "settings.about.privacy" = "Informativa sulla privacy";
 "settings.about.terms" = "Termini di servizio";
+"settings.about.feedback" = "Invia feedback";
+"settings.about.feedback.copied" = "Indirizzo e-mail copiato: gruezi@helvetra.ch";
 "settings.about.footer" = "Fatto con ❤️ in Svizzera";
 
 // Danger Zone
