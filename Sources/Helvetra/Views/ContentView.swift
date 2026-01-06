@@ -209,6 +209,19 @@ class StoreService: ObservableObject {
         }
     }
 
+    /// Get the JWS representation of the current subscription entitlement.
+    /// Used to include in translation requests for anonymous users with StoreKit subscriptions.
+    func getCurrentEntitlementJWS() async -> String? {
+        for await result in Transaction.currentEntitlements {
+            // Only return JWS for pro/plus subscriptions
+            if case .verified(let transaction) = result,
+               transaction.productID.contains("pro") {
+                return result.jwsRepresentation
+            }
+        }
+        return nil
+    }
+
     /// Sync existing StoreKit entitlements with backend (called after login).
     private func syncStoreKitWithBackend() async {
         print("[StoreKit] Syncing existing entitlements with backend after login...")
@@ -355,12 +368,32 @@ struct ContentView: View {
     @State private var keyboardHeight: CGFloat = 0
     @State private var isSettingsOpen: Bool = false
     @State private var showCopyConfirmation: Bool = false
+    @State private var inputFontSize: CGFloat = 28
 
     // MARK: - Helpers
 
     /// Get localized language name for a language code.
     private func languageName(for code: String) -> String {
         L10n.languageName(code)
+    }
+
+    /// Dynamic font sizing: reduces from 28px to 18px based on text length before enabling scroll.
+    private func dynamicFont(for text: String) -> Font {
+        let length = text.count
+        let baseSize: CGFloat = 28
+        let minSize: CGFloat = 18
+
+        // Start reducing at 50 chars, reach minimum at 200 chars
+        if length < 50 {
+            return .system(size: baseSize, weight: .regular)
+        } else if length > 200 {
+            return .system(size: minSize, weight: .regular)
+        } else {
+            // Linear interpolation between 50 and 200 chars
+            let progress = CGFloat(length - 50) / 150.0
+            let size = baseSize - (progress * (baseSize - minSize))
+            return .system(size: size, weight: .regular)
+        }
     }
 
     /// Space above L1 when keyboard hidden.
@@ -406,6 +439,19 @@ struct ContentView: View {
     }
 
     private var isKeyboardVisible: Bool { keyboardHeight > 0 }
+
+    /// Languages that have formality or dialect settings.
+    private let languagesWithSettings: Set<String> = ["de", "fr", "it", "gsw"]
+
+    /// Whether source language has additional settings (formality/dialect).
+    private var sourceHasSettings: Bool {
+        languagesWithSettings.contains(selectedSourceLanguage)
+    }
+
+    /// Whether target language has additional settings (formality/dialect).
+    private var targetHasSettings: Bool {
+        languagesWithSettings.contains(selectedTargetLanguage)
+    }
 
     private var bottomPadding: CGFloat {
         keyboardHeight > 0 ? keyboardHeight - bottomBleed : 0
@@ -549,8 +595,24 @@ struct ContentView: View {
                 VStack(spacing: 0) {
                     // Top spacer - shrinks to 0 when keyboard appears, expands when settings open
                     let topSpacing = useSideBySideLayout ? safeTop + 50 : safeTop + settingsAreaHeight
+                    // Visible card height when settings open - enough to show first line of text
+                    let settingsOffset: CGFloat = AuthService.shared.isAuthenticated ? 200 : 160
                     Color.clear
-                        .frame(height: isSettingsOpen ? geometry.size.height - 120 : (isKeyboardVisible ? 0 : topSpacing))
+                        .frame(height: isSettingsOpen ? geometry.size.height - settingsOffset : (isKeyboardVisible ? 0 : topSpacing))
+
+                    // Swipe-down indicator (visible when keyboard is open)
+                    if isKeyboardVisible && !isSettingsOpen {
+                        Button(action: {
+                            isSourceFocused = false
+                        }) {
+                            Image(systemName: "chevron.compact.down")
+                                .font(.system(size: 28, weight: .medium))
+                                .foregroundStyle(Colors.textSecondaryAdaptive.opacity(0.6))
+                        }
+                        .frame(height: 24)
+                        .frame(maxWidth: .infinity)
+                        .contentShape(Rectangle())
+                    }
 
                     // Card content
                     VStack(spacing: 0) {
@@ -562,43 +624,78 @@ struct ContentView: View {
                         layout {
                             // L1T: Input area
                             VStack(alignment: .leading, spacing: Spacing.sm) {
-                                HStack(alignment: .top) {
-                                    TextField(L10n.inputPlaceholder, text: $viewModel.sourceText, axis: .vertical)
-                                        .font(Typography.translationText)
-                                        .foregroundStyle(Colors.textPrimaryAdaptive)
-                                        .focused($isSourceFocused)
-                                        .lineLimit(1...10)
-                                        .onChange(of: viewModel.sourceText) { _, _ in
-                                            syncViewModelSettings()
-                                            viewModel.sourceTextChanged()
-                                        }
-                                        .onChange(of: selectedSourceLanguage) { _, _ in
-                                            syncViewModelSettings()
-                                            viewModel.retranslate()
-                                        }
-                                        .onChange(of: selectedTargetLanguage) { _, _ in
-                                            syncViewModelSettings()
-                                            viewModel.retranslate()
-                                        }
-                                        .onChange(of: isSourceFocused) { _, focused in
-                                            if focused && isSettingsOpen {
-                                                withAnimation(.spring(response: 0.3, dampingFraction: 0.9)) {
-                                                    isSettingsOpen = false
+                                ScrollViewReader { scrollProxy in
+                                    ScrollView {
+                                        HStack(alignment: .top) {
+                                            TextField(L10n.inputPlaceholder, text: $viewModel.sourceText, axis: .vertical)
+                                                .font(.system(size: inputFontSize, weight: .regular))
+                                                .foregroundStyle(Colors.textPrimaryAdaptive)
+                                                .focused($isSourceFocused)
+                                                .lineLimit(1...)
+                                                .onChange(of: viewModel.sourceText) { _, newValue in
+                                                    syncViewModelSettings()
+                                                    viewModel.sourceTextChanged()
+                                                    // Update font size based on text length
+                                                    let length = newValue.count
+                                                    let baseSize: CGFloat = 28
+                                                    let minSize: CGFloat = 18
+                                                    if length < 50 {
+                                                        inputFontSize = baseSize
+                                                    } else if length > 200 {
+                                                        inputFontSize = minSize
+                                                    } else {
+                                                        let progress = CGFloat(length - 50) / 150.0
+                                                        inputFontSize = baseSize - (progress * (baseSize - minSize))
+                                                    }
+                                                    // Auto-scroll to bottom when typing
+                                                    scrollProxy.scrollTo("inputBottom", anchor: .bottom)
                                                 }
+                                                .onChange(of: selectedSourceLanguage) { _, _ in
+                                                    syncViewModelSettings()
+                                                    viewModel.retranslate()
+                                                }
+                                                .onChange(of: selectedTargetLanguage) { _, _ in
+                                                    syncViewModelSettings()
+                                                    viewModel.retranslate()
+                                                }
+                                                .onChange(of: selectedFormality) { _, _ in
+                                                    syncViewModelSettings()
+                                                    viewModel.retranslate()
+                                                }
+                                                .onChange(of: selectedDialect) { _, _ in
+                                                    syncViewModelSettings()
+                                                    viewModel.retranslate()
+                                                }
+                                                .onChange(of: isSourceFocused) { _, focused in
+                                                    if focused && isSettingsOpen {
+                                                        withAnimation(.spring(response: 0.3, dampingFraction: 0.9)) {
+                                                            isSettingsOpen = false
+                                                        }
+                                                    }
+                                                }
+
+                                            if !viewModel.sourceText.isEmpty {
+                                                Button(action: { viewModel.clear() }) {
+                                                    Image(systemName: "xmark.circle")
+                                                        .font(.system(size: 22))
+                                                }
+                                                .frame(width: Spacing.touchTarget, height: Spacing.touchTarget)
+                                                .foregroundStyle(Colors.textSecondaryAdaptive)
+                                                .accessibilityLabel(L10n.clearText)
+                                                .accessibilityHint("Double tap to clear source text")
                                             }
+
+                                            Spacer()
                                         }
 
-                                    if !viewModel.sourceText.isEmpty {
-                                        Button(action: { viewModel.clear() }) {
-                                            Image(systemName: "xmark.circle")
-                                                .font(.system(size: 22))
-                                        }
-                                        .frame(width: Spacing.touchTarget, height: Spacing.touchTarget)
-                                        .foregroundStyle(Colors.textSecondaryAdaptive)
-                                        .accessibilityLabel(L10n.clearText)
-                                        .accessibilityHint("Double tap to clear source text")
+                                        // Invisible anchor for auto-scroll
+                                        Color.clear
+                                            .frame(height: 1)
+                                            .id("inputBottom")
                                     }
                                 }
+                                .scrollDismissesKeyboard(.interactively)
+                                .layoutPriority(1)
 
                                 if viewModel.sourceText.isEmpty {
                                     Button(action: { pasteFromClipboard() }) {
@@ -609,7 +706,7 @@ struct ContentView: View {
                                     .accessibilityHint("Double tap to paste text from clipboard")
                                 }
 
-                                Spacer()
+                                Spacer(minLength: 0)
 
                                 if showCharacterCounter {
                                     Text("\(viewModel.sourceText.count) / \(characterLimit)")
@@ -633,34 +730,47 @@ struct ContentView: View {
 
                             // L1B: Output area (same height as L1T)
                             VStack(alignment: .leading, spacing: Spacing.sm) {
-                                HStack(alignment: .top) {
-                                    if viewModel.sourceText.isEmpty {
-                                        Text(L10n.outputPlaceholder)
-                                            .font(Typography.translationText)
-                                            .foregroundStyle(Colors.textSecondaryAdaptive)
-                                            .offset(y: isSettingsOpen ? 100 : 0)
-                                    } else if viewModel.isTranslating {
-                                        HStack(spacing: Spacing.sm) {
-                                            ProgressView()
-                                            Text(L10n.translating)
-                                                .font(Typography.translationText)
-                                                .foregroundStyle(Colors.textSecondaryAdaptive)
+                                ScrollViewReader { scrollProxy in
+                                    ScrollView {
+                                        HStack(alignment: .top) {
+                                            if viewModel.sourceText.isEmpty {
+                                                Text(L10n.outputPlaceholder)
+                                                    .font(dynamicFont(for: ""))
+                                                    .foregroundStyle(Colors.textSecondaryAdaptive)
+                                                    .offset(y: isSettingsOpen ? 100 : 0)
+                                            } else if viewModel.isTranslating {
+                                                HStack(spacing: Spacing.sm) {
+                                                    ProgressView()
+                                                    Text(L10n.translating)
+                                                        .font(dynamicFont(for: ""))
+                                                        .foregroundStyle(Colors.textSecondaryAdaptive)
+                                                }
+                                            } else if let error = viewModel.errorMessage {
+                                                Text(error)
+                                                    .font(Typography.bodyMedium)
+                                                    .foregroundStyle(Colors.swissRed)
+                                            } else if !viewModel.translatedText.isEmpty {
+                                                Text(viewModel.translatedText)
+                                                    .font(dynamicFont(for: viewModel.translatedText))
+                                                    .foregroundStyle(Colors.textPrimaryAdaptive)
+                                                    .textSelection(.enabled)
+                                            }
+
+                                            Spacer()
                                         }
-                                    } else if let error = viewModel.errorMessage {
-                                        Text(error)
-                                            .font(Typography.bodyMedium)
-                                            .foregroundStyle(Colors.swissRed)
-                                    } else if !viewModel.translatedText.isEmpty {
-                                        Text(viewModel.translatedText)
-                                            .font(Typography.translationText)
-                                            .foregroundStyle(Colors.textPrimaryAdaptive)
-                                            .textSelection(.enabled)
+
+                                        // Invisible anchor for auto-scroll
+                                        Color.clear
+                                            .frame(height: 1)
+                                            .id("outputBottom")
                                     }
-
-                                    Spacer()
+                                    .onChange(of: viewModel.translatedText) { _, _ in
+                                        scrollProxy.scrollTo("outputBottom", anchor: .bottom)
+                                    }
                                 }
+                                .layoutPriority(1)
 
-                                Spacer()
+                                Spacer(minLength: 0)
 
                                 if !viewModel.translatedText.isEmpty && !viewModel.isTranslating {
                                     HStack(spacing: Spacing.sm) {
@@ -709,6 +819,14 @@ struct ContentView: View {
                             y: -8
                         )
                     }
+                    .contentShape(Rectangle())
+                    .onTapGesture {
+                        if isSettingsOpen {
+                            withAnimation(.spring(response: 0.3, dampingFraction: 0.9)) {
+                                isSettingsOpen = false
+                            }
+                        }
+                    }
                     .padding(.horizontal, Spacing.screenPadding)
                 }
                 .padding(.bottom, bottomPadding)
@@ -732,6 +850,11 @@ struct ContentView: View {
                                             .font(.system(size: 10))
                                             .foregroundStyle(Colors.swissRed.opacity(0.8))
                                     }
+                                    if sourceHasSettings {
+                                        Image(systemName: "chevron.right")
+                                            .font(.system(size: 10, weight: .semibold))
+                                            .foregroundStyle(Colors.textSecondaryAdaptive)
+                                    }
                                 }
                             }
                             .buttonStyle(.glassPill)
@@ -752,7 +875,14 @@ struct ContentView: View {
                             Spacer()
 
                             Button(action: { showTargetLanguagePicker = true }) {
-                                Text(targetLanguageName)
+                                HStack(spacing: 4) {
+                                    Text(targetLanguageName)
+                                    if targetHasSettings {
+                                        Image(systemName: "chevron.right")
+                                            .font(.system(size: 10, weight: .semibold))
+                                            .foregroundStyle(Colors.textSecondaryAdaptive)
+                                    }
+                                }
                             }
                             .buttonStyle(.glassPill)
                             .accessibilityLabel(L10n.targetLanguageLabel(targetLanguageName))
@@ -1745,6 +1875,13 @@ actor TranslationService {
         // Include auth token for authenticated users (enables usage tracking)
         if let accessToken = await AuthService.shared.getAccessToken() {
             urlRequest.setValue("Bearer \(accessToken)", forHTTPHeaderField: "Authorization")
+        }
+
+        // Include StoreKit subscription JWS for anonymous users with in-app purchases
+        // This allows the backend to verify the subscription without requiring login
+        if let jwsString = await StoreService.shared.getCurrentEntitlementJWS() {
+            urlRequest.setValue(jwsString, forHTTPHeaderField: "X-StoreKit-JWS")
+            print("[Translation] Including StoreKit JWS for subscription verification")
         }
 
         // Debug: print request body

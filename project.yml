@@ -3,7 +3,7 @@ name: Helvetra
 options:
   bundleIdPrefix: ch.helvetra
   deploymentTarget:
-    iOS: "26.0"
+    iOS: "18.0"
   xcodeVersion: "26.2"
   generateEmptyDirectories: true
   groupSortPosition: top
@@ -22,7 +22,7 @@ targets:
   Helvetra:
     type: application
     platform: iOS
-    deploymentTarget: "26.0"
+    deploymentTarget: "18.0"
     sources:
       - path: Sources/Helvetra
         excludes:
