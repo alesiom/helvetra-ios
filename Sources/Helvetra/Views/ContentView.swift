@@ -523,29 +523,6 @@ struct ContentView: View {
         }
     }
 
-    /// Share both source and translation via system share sheet.
-    private func shareTranslation() {
-        let shareText = """
-        \(viewModel.sourceText)
-
-        ↓
-
-        \(viewModel.translatedText)
-
-        — Translated with Helvetra
-        """
-
-        let activityVC = UIActivityViewController(
-            activityItems: [shareText],
-            applicationActivities: nil
-        )
-        if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
-           let window = windowScene.windows.first,
-           let rootVC = window.rootViewController {
-            rootVC.present(activityVC, animated: true)
-        }
-    }
-
     // MARK: - Body
 
     var body: some View {
@@ -624,14 +601,15 @@ struct ContentView: View {
                         layout {
                             // L1T: Input area
                             VStack(alignment: .leading, spacing: Spacing.sm) {
-                                ScrollViewReader { scrollProxy in
-                                    ScrollView {
-                                        HStack(alignment: .top) {
+                                ZStack(alignment: .topTrailing) {
+                                    ScrollViewReader { scrollProxy in
+                                        ScrollView {
                                             TextField(L10n.inputPlaceholder, text: $viewModel.sourceText, axis: .vertical)
                                                 .font(.system(size: inputFontSize, weight: .regular))
                                                 .foregroundStyle(Colors.textPrimaryAdaptive)
                                                 .focused($isSourceFocused)
                                                 .lineLimit(1...)
+                                                .padding(.trailing, viewModel.sourceText.isEmpty ? 0 : 28)
                                                 .onChange(of: viewModel.sourceText) { _, newValue in
                                                     syncViewModelSettings()
                                                     viewModel.sourceTextChanged()
@@ -650,11 +628,24 @@ struct ContentView: View {
                                                     // Auto-scroll to bottom when typing
                                                     scrollProxy.scrollTo("inputBottom", anchor: .bottom)
                                                 }
-                                                .onChange(of: selectedSourceLanguage) { _, _ in
+                                                .onChange(of: selectedSourceLanguage) { oldValue, newValue in
+                                                    // Prevent same language on both sides
+                                                    if newValue != "auto" && newValue == selectedTargetLanguage {
+                                                        selectedTargetLanguage = oldValue
+                                                    }
                                                     syncViewModelSettings()
                                                     viewModel.retranslate()
                                                 }
-                                                .onChange(of: selectedTargetLanguage) { _, _ in
+                                                .onChange(of: selectedTargetLanguage) { oldValue, newValue in
+                                                    // Prevent same language on both sides
+                                                    // Check both explicit source and auto-detected source
+                                                    let effectiveSource = selectedSourceLanguage == "auto"
+                                                        ? viewModel.detectedLanguage
+                                                        : selectedSourceLanguage
+                                                    if newValue == effectiveSource {
+                                                        // Swap: source becomes old target, turn off auto-detect
+                                                        selectedSourceLanguage = oldValue
+                                                    }
                                                     syncViewModelSettings()
                                                     viewModel.retranslate()
                                                 }
@@ -674,27 +665,27 @@ struct ContentView: View {
                                                     }
                                                 }
 
-                                            if !viewModel.sourceText.isEmpty {
-                                                Button(action: { viewModel.clear() }) {
-                                                    Image(systemName: "xmark.circle")
-                                                        .font(.system(size: 22))
-                                                }
-                                                .frame(width: Spacing.touchTarget, height: Spacing.touchTarget)
-                                                .foregroundStyle(Colors.textSecondaryAdaptive)
-                                                .accessibilityLabel(L10n.clearText)
-                                                .accessibilityHint("Double tap to clear source text")
-                                            }
-
-                                            Spacer()
+                                            // Invisible anchor for auto-scroll
+                                            Color.clear
+                                                .frame(height: 1)
+                                                .id("inputBottom")
                                         }
+                                    }
+                                    .scrollDismissesKeyboard(.interactively)
 
-                                        // Invisible anchor for auto-scroll
-                                        Color.clear
-                                            .frame(height: 1)
-                                            .id("inputBottom")
+                                    // Clear button - fixed position, doesn't scroll
+                                    if !viewModel.sourceText.isEmpty {
+                                        Button(action: { viewModel.clear() }) {
+                                            Image(systemName: "xmark.circle")
+                                                .font(.system(size: 22))
+                                        }
+                                        .frame(width: Spacing.touchTarget, height: Spacing.touchTarget)
+                                        .foregroundStyle(Colors.textSecondaryAdaptive)
+                                        .accessibilityLabel(L10n.clearText)
+                                        .accessibilityHint("Double tap to clear source text")
+                                        .offset(x: 8)
                                     }
                                 }
-                                .scrollDismissesKeyboard(.interactively)
                                 .layoutPriority(1)
 
                                 if viewModel.sourceText.isEmpty {
@@ -730,52 +721,49 @@ struct ContentView: View {
 
                             // L1B: Output area (same height as L1T)
                             VStack(alignment: .leading, spacing: Spacing.sm) {
-                                ScrollViewReader { scrollProxy in
-                                    ScrollView {
-                                        HStack(alignment: .top) {
-                                            if viewModel.sourceText.isEmpty {
-                                                Text(L10n.outputPlaceholder)
-                                                    .font(dynamicFont(for: ""))
-                                                    .foregroundStyle(Colors.textSecondaryAdaptive)
-                                                    .offset(y: isSettingsOpen ? 100 : 0)
-                                            } else if viewModel.isTranslating {
-                                                HStack(spacing: Spacing.sm) {
-                                                    ProgressView()
-                                                    Text(L10n.translating)
+                                ZStack(alignment: .topTrailing) {
+                                    ScrollViewReader { scrollProxy in
+                                        ScrollView {
+                                            HStack(alignment: .top) {
+                                                if viewModel.sourceText.isEmpty {
+                                                    Text(L10n.outputPlaceholder)
                                                         .font(dynamicFont(for: ""))
                                                         .foregroundStyle(Colors.textSecondaryAdaptive)
+                                                        .offset(y: isSettingsOpen ? 100 : 0)
+                                                } else if viewModel.isTranslating {
+                                                    HStack(spacing: Spacing.sm) {
+                                                        ProgressView()
+                                                        Text(L10n.translating)
+                                                            .font(dynamicFont(for: ""))
+                                                            .foregroundStyle(Colors.textSecondaryAdaptive)
+                                                    }
+                                                } else if let error = viewModel.errorMessage {
+                                                    Text(error)
+                                                        .font(Typography.bodyMedium)
+                                                        .foregroundStyle(Colors.swissRed)
+                                                } else if !viewModel.translatedText.isEmpty {
+                                                    Text(viewModel.translatedText)
+                                                        .font(dynamicFont(for: viewModel.translatedText))
+                                                        .foregroundStyle(Colors.textPrimaryAdaptive)
+                                                        .textSelection(.enabled)
+                                                        .padding(.trailing, 28)
                                                 }
-                                            } else if let error = viewModel.errorMessage {
-                                                Text(error)
-                                                    .font(Typography.bodyMedium)
-                                                    .foregroundStyle(Colors.swissRed)
-                                            } else if !viewModel.translatedText.isEmpty {
-                                                Text(viewModel.translatedText)
-                                                    .font(dynamicFont(for: viewModel.translatedText))
-                                                    .foregroundStyle(Colors.textPrimaryAdaptive)
-                                                    .textSelection(.enabled)
+
+                                                Spacer()
                                             }
 
-                                            Spacer()
+                                            // Invisible anchor for auto-scroll
+                                            Color.clear
+                                                .frame(height: 1)
+                                                .id("outputBottom")
                                         }
-
-                                        // Invisible anchor for auto-scroll
-                                        Color.clear
-                                            .frame(height: 1)
-                                            .id("outputBottom")
+                                        .onChange(of: viewModel.translatedText) { _, _ in
+                                            scrollProxy.scrollTo("outputBottom", anchor: .bottom)
+                                        }
                                     }
-                                    .onChange(of: viewModel.translatedText) { _, _ in
-                                        scrollProxy.scrollTo("outputBottom", anchor: .bottom)
-                                    }
-                                }
-                                .layoutPriority(1)
 
-                                Spacer(minLength: 0)
-
-                                if !viewModel.translatedText.isEmpty && !viewModel.isTranslating {
-                                    HStack(spacing: Spacing.sm) {
-                                        Spacer()
-
+                                    // Copy button - fixed position, doesn't scroll
+                                    if !viewModel.translatedText.isEmpty && !viewModel.isTranslating {
                                         Button(action: { copyTranslation() }) {
                                             Image(systemName: "doc.on.doc")
                                                 .font(.system(size: 22))
@@ -784,18 +772,10 @@ struct ContentView: View {
                                         .foregroundStyle(Colors.textSecondaryAdaptive)
                                         .accessibilityLabel(L10n.copyTranslation)
                                         .accessibilityHint("Double tap to copy translation to clipboard")
-
-                                        Button(action: { shareTranslation() }) {
-                                            Image(systemName: "square.and.arrow.up")
-                                                .font(.system(size: 22))
-                                        }
-                                        .frame(width: Spacing.touchTarget, height: Spacing.touchTarget)
-                                        .foregroundStyle(Colors.textSecondaryAdaptive)
-                                        .accessibilityLabel(L10n.shareTranslation)
-                                        .accessibilityHint("Double tap to share translation")
+                                        .offset(x: 8)
                                     }
-                                    .padding(.bottom, isKeyboardVisible ? 10 : -20)
                                 }
+                                .layoutPriority(1)
                             }
                             .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
                             .padding(Spacing.cardPadding)
@@ -1870,6 +1850,7 @@ actor TranslationService {
         var urlRequest = URLRequest(url: url)
         urlRequest.httpMethod = "POST"
         urlRequest.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        urlRequest.setValue("helvetra-ios", forHTTPHeaderField: "X-Client")
         urlRequest.httpBody = try JSONEncoder().encode(request)
 
         // Include auth token for authenticated users (enables usage tracking)

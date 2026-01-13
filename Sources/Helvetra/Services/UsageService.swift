@@ -78,7 +78,7 @@ class UsageService: ObservableObject {
             return
         }
 
-        // No StoreKit subscription - check backend
+        // No StoreKit subscription - check backend for authenticated users
         let isAuth = AuthService.shared.isAuthenticated
         print("[Usage] No StoreKit subscription, checking backend (authenticated: \(isAuth))")
 
@@ -86,7 +86,9 @@ class UsageService: ObservableObject {
             if isAuth {
                 try await fetchAuthenticatedUsage()
             } else {
-                try await fetchAnonymousUsage()
+                // iOS app anonymous users get FREE tier limits (20k/month)
+                // No need to call backend - we don't track usage for iOS anonymous users
+                applyFreeUserLimits()
             }
             print("[Usage] Updated: \(charactersUsed)/\(charactersLimit)")
         } catch {
@@ -108,6 +110,18 @@ class UsageService: ObservableObject {
 
         // Reset date is approximately 1 month from now
         // (exact date would come from StoreKit transaction, but this is a reasonable default)
+        let calendar = Calendar.current
+        resetAt = calendar.date(byAdding: .month, value: 1, to: Date())
+    }
+
+    /// Apply FREE tier limits for iOS anonymous users (20k/month, not tracked).
+    private func applyFreeUserLimits() {
+        // iOS anonymous users get FREE tier limits (matches backend tiers.py)
+        charactersLimit = 20_000
+        charactersUsed = 0
+        charactersRemaining = charactersLimit
+        periodType = "monthly"
+
         let calendar = Calendar.current
         resetAt = calendar.date(byAdding: .month, value: 1, to: Date())
     }
