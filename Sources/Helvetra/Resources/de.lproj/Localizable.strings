@@ -67,6 +67,7 @@
 // About
 "settings.about.title" = "Über";
 "settings.about.version" = "Version";
+"settings.about.website" = "Über Helvetra";
 "settings.about.privacy" = "Datenschutz";
 "settings.about.terms" = "Nutzungsbedingungen";
 "settings.about.feedback" = "Feedback senden";
@@ -87,7 +88,7 @@
 "subscription.current" = "Aktuell: %@";
 "subscription.monthly" = "Monatlich";
 "subscription.yearly" = "Jährlich";
-"subscription.save" = "40% sparen";
+"subscription.save" = "+35% sparen";
 "subscription.billed.yearly" = "jährlich abgerechnet";
 "subscription.subscribe" = "Abonnieren";
 "subscription.current.plan" = "Aktuelles Abo";
@@ -121,6 +122,7 @@
 
 // MARK: - Errors
 
+"error.generic" = "Etwas ist schiefgelaufen. Bitte versuche es erneut.";
 "error.network" = "Netzwerkverbindung fehlgeschlagen";
 "error.server" = "Serverfehler (%d)";
 "error.invalid.response" = "Ungültige Serverantwort";

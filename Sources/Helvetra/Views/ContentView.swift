@@ -788,9 +788,14 @@ struct ContentView: View {
                                                             .foregroundStyle(Colors.textSecondaryAdaptive)
                                                     }
                                                 } else if let error = viewModel.errorMessage {
-                                                    Text(error)
-                                                        .font(Typography.bodyMedium)
-                                                        .foregroundStyle(Colors.swissRed)
+                                                    VStack(alignment: .leading, spacing: Spacing.xs) {
+                                                        Text(L10n.errorGeneric)
+                                                            .font(Typography.bodyMedium)
+                                                            .foregroundStyle(Colors.textPrimaryAdaptive)
+                                                        Text(error)
+                                                            .font(Typography.caption)
+                                                            .foregroundStyle(Colors.textSecondaryAdaptive)
+                                                    }
                                                 } else if !viewModel.translatedText.isEmpty {
                                                     Text(viewModel.translatedText)
                                                         .font(dynamicFont(for: viewModel.translatedText))
@@ -875,6 +880,7 @@ struct ContentView: View {
                             Button(action: { showSourceLanguagePicker = true }) {
                                 HStack(spacing: 4) {
                                     Text(sourceLanguageName)
+                                        .lineLimit(1)
                                     if isLanguageDetected {
                                         Image(systemName: "checkmark.circle.fill")
                                             .font(.system(size: 10))
@@ -901,6 +907,7 @@ struct ContentView: View {
 
                             Button(action: { showTargetLanguagePicker = true }) {
                                 Text(targetLanguageName)
+                                    .lineLimit(1)
                             }
                             .buttonStyle(.glassPill)
                             .accessibilityLabel(L10n.targetLanguageLabel(targetLanguageName))
@@ -1177,6 +1184,27 @@ struct SubscriptionView: View {
         storeService.products.first { $0.id.contains(isYearly ? "yearly" : "monthly") }
     }
 
+    /// Display price: for yearly, show monthly equivalent (marketing standard)
+    private var displayPrice: String {
+        guard let product = plusProduct else {
+            return isYearly ? "CHF 4.99/month" : "CHF 7.99/month"
+        }
+        if isYearly {
+            // Hardcoded monthly equivalent (59.99/12 = 4.999, marketed as 4.99)
+            return "CHF 4.99/month"
+        } else {
+            return product.displayPrice + "/month"
+        }
+    }
+
+    /// For yearly, show the full yearly price in the billing note
+    private var billingNoteText: String? {
+        guard isYearly, let product = plusProduct else {
+            return nil
+        }
+        return product.displayPrice + " " + L10n.billedYearly
+    }
+
     var body: some View {
         NavigationStack {
             ScrollView {
@@ -1221,8 +1249,8 @@ struct SubscriptionView: View {
                     // Helvetra+ plan
                     PlanCard(
                         name: "Helvetra+",
-                        price: plusProduct?.displayPrice ?? (isYearly ? "CHF 4.99/month" : "CHF 7.99/month"),
-                        billingNote: isYearly ? L10n.billedYearly : nil,
+                        price: displayPrice,
+                        billingNote: billingNoteText,
                         features: [
                             L10n.featureCharacters,
                             L10n.featurePriority,
@@ -1476,11 +1504,27 @@ struct SettingsView: View {
 
                 // About section
                 SettingsSection(title: L10n.aboutTitle) {
+                    Button(action: openFeedbackEmail) {
+                        SettingsRow(
+                            icon: "envelope",
+                            title: L10n.sendFeedback,
+                            showChevron: true
+                        )
+                    }
+
                     SettingsRow(
                         icon: "info.circle",
                         title: L10n.version,
                         value: "\(appVersion) (\(buildNumber))"
                     )
+
+                    Link(destination: URL(string: "https://helvetra.ch/about")!) {
+                        SettingsRow(
+                            icon: "globe",
+                            title: L10n.aboutWebsite,
+                            showChevron: true
+                        )
+                    }
 
                     Link(destination: URL(string: "https://helvetra.ch/privacy")!) {
                         SettingsRow(
@@ -1494,14 +1538,6 @@ struct SettingsView: View {
                         SettingsRow(
                             icon: "doc.text",
                             title: L10n.termsOfService,
-                            showChevron: true
-                        )
-                    }
-
-                    Button(action: openFeedbackEmail) {
-                        SettingsRow(
-                            icon: "envelope",
-                            title: L10n.sendFeedback,
                             showChevron: true
                         )
                     }

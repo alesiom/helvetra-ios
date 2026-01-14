@@ -67,6 +67,7 @@
 // About
 "settings.about.title" = "Informazioni";
 "settings.about.version" = "Versione";
+"settings.about.website" = "Informazioni su Helvetra";
 "settings.about.privacy" = "Informativa sulla privacy";
 "settings.about.terms" = "Termini di servizio";
 "settings.about.feedback" = "Invia feedback";
@@ -87,7 +88,7 @@
 "subscription.current" = "Attuale: %@";
 "subscription.monthly" = "Mensile";
 "subscription.yearly" = "Annuale";
-"subscription.save" = "Risparmia 40%";
+"subscription.save" = "Risparmia +35%";
 "subscription.billed.yearly" = "fatturato annualmente";
 "subscription.subscribe" = "Abbonati";
 "subscription.current.plan" = "Piano attuale";
@@ -121,6 +122,7 @@
 
 // MARK: - Errors
 
+"error.generic" = "Qualcosa è andato storto. Riprova.";
 "error.network" = "Connessione di rete fallita";
 "error.server" = "Errore del server (%d)";
 "error.invalid.response" = "Risposta non valida dal server";

@@ -67,6 +67,7 @@
 // About
 "settings.about.title" = "About";
 "settings.about.version" = "Version";
+"settings.about.website" = "About Helvetra";
 "settings.about.privacy" = "Privacy Policy";
 "settings.about.terms" = "Terms of Service";
 "settings.about.feedback" = "Send Feedback";
@@ -87,7 +88,7 @@
 "subscription.current" = "Current: %@";
 "subscription.monthly" = "Monthly";
 "subscription.yearly" = "Yearly";
-"subscription.save" = "Save 40%";
+"subscription.save" = "Save +35%";
 "subscription.billed.yearly" = "billed yearly";
 "subscription.subscribe" = "Subscribe";
 "subscription.current.plan" = "Current Plan";
@@ -121,6 +122,7 @@
 
 // MARK: - Errors
 
+"error.generic" = "Something went wrong. Please try again.";
 "error.network" = "Network connection failed";
 "error.server" = "Server error (%d)";
 "error.invalid.response" = "Invalid response from server";

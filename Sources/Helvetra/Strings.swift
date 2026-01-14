@@ -71,6 +71,7 @@ enum L10n {
     // About
     static let aboutTitle = NSLocalizedString("settings.about.title", comment: "")
     static let version = NSLocalizedString("settings.about.version", comment: "")
+    static let aboutWebsite = NSLocalizedString("settings.about.website", comment: "")
     static let privacyPolicy = NSLocalizedString("settings.about.privacy", comment: "")
     static let termsOfService = NSLocalizedString("settings.about.terms", comment: "")
     static let sendFeedback = NSLocalizedString("settings.about.feedback", comment: "")
@@ -126,6 +127,7 @@ enum L10n {
 
     // MARK: - Errors
 
+    static let errorGeneric = NSLocalizedString("error.generic", comment: "")
     static let errorNetwork = NSLocalizedString("error.network", comment: "")
     static func errorServer(_ code: Int) -> String {
         String(format: NSLocalizedString("error.server", comment: ""), code)
