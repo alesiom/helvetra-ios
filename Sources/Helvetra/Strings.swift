@@ -117,6 +117,12 @@ enum L10n {
     static let ok = NSLocalizedString("common.ok", comment: "")
     static let cancel = NSLocalizedString("common.cancel", comment: "")
 
+    // MARK: - Limit Reached
+
+    static let limitTitle = NSLocalizedString("limit.title", comment: "")
+    static let limitMessage = NSLocalizedString("limit.message", comment: "")
+    static let limitUpgrade = NSLocalizedString("limit.upgrade", comment: "")
+
     // MARK: - Errors
 
     static let errorNetwork = NSLocalizedString("error.network", comment: "")

@@ -112,6 +112,12 @@
 "common.ok" = "OK";
 "common.cancel" = "Cancel";
 
+// MARK: - Limit Reached
+
+"limit.title" = "You reached the limit!";
+"limit.message" = "Upgrade to Helvetra+ for up to 5,000 characters per translation.";
+"limit.upgrade" = "Upgrade";
+
 // MARK: - Errors
 
 "error.network" = "Network connection failed";

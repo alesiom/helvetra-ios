@@ -750,14 +750,14 @@ struct ContentView: View {
                                                 } else if isOverPerRequestLimit {
                                                     // Show upgrade prompt when over per-request limit
                                                     VStack(alignment: .leading, spacing: Spacing.md) {
-                                                        Text("Text too long for free plan")
+                                                        Text(L10n.limitTitle)
                                                             .font(Typography.bodyMedium)
                                                             .foregroundStyle(Colors.textPrimaryAdaptive)
-                                                        Text("Upgrade to Helvetra+ for up to 5,000 characters per translation.")
+                                                        Text(L10n.limitMessage)
                                                             .font(Typography.caption)
                                                             .foregroundStyle(Colors.textSecondaryAdaptive)
                                                         Button(action: { isSettingsOpen = true }) {
-                                                            Label("Upgrade", systemImage: "arrow.up.circle.fill")
+                                                            Label(L10n.limitUpgrade, systemImage: "arrow.up.circle.fill")
                                                         }
                                                         .buttonStyle(.helvetraPrimary)
                                                     }
@@ -793,8 +793,8 @@ struct ContentView: View {
                                         }
                                     }
 
-                                    // Copy button - fixed position, doesn't scroll
-                                    if !viewModel.translatedText.isEmpty && !viewModel.isTranslating {
+                                    // Copy button - fixed position, doesn't scroll (hidden when over limit)
+                                    if !viewModel.translatedText.isEmpty && !viewModel.isTranslating && !isOverPerRequestLimit {
                                         Button(action: { copyTranslation() }) {
                                             Image(systemName: "doc.on.doc")
                                                 .font(.system(size: 22))
