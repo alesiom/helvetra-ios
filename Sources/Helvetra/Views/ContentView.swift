@@ -5,7 +5,7 @@ import SwiftUI
 
 /// Manages in-app purchases and subscriptions using StoreKit 2.
 @MainActor
-class StoreService: ObservableObject {
+final class StoreService: ObservableObject, @unchecked Sendable {
 
     /// Subscription tiers available for purchase.
     enum SubscriptionTier: String, CaseIterable {
@@ -31,7 +31,7 @@ class StoreService: ObservableObject {
         var productId: String? {
             switch self {
             case .free: return nil
-            case .plus: return "ch.helvetra.pro.monthly"
+            case .plus: return "ch.helvetra.plus.monthly"
             }
         }
     }
@@ -48,8 +48,8 @@ class StoreService: ObservableObject {
     private let session: URLSession
 
     private let productIDs: Set<String> = [
-        "ch.helvetra.pro.monthly",
-        "ch.helvetra.pro.yearly"
+        "ch.helvetra.plus.monthly",
+        "ch.helvetra.plus.yearly"
     ]
 
     private init() {
@@ -66,7 +66,9 @@ class StoreService: ObservableObject {
             object: nil,
             queue: .main
         ) { [weak self] _ in
-            self?.syncFromAuth()
+            Task { @MainActor in
+                self?.syncFromAuth()
+            }
         }
     }
 
@@ -163,7 +165,8 @@ class StoreService: ObservableObject {
                 switch result {
                 case .verified(let transaction):
                     // Verify renewal with backend
-                    if await AuthService.shared.isAuthenticated {
+                    let isAuth = await AuthService.shared.isAuthenticated
+                    if isAuth {
                         await self.verifyWithBackend(verification: result)
                     }
                     await self.updatePurchasedProducts()
@@ -324,6 +327,7 @@ enum StoreError: LocalizedError {
 // MARK: - Haptic Service
 
 /// Centralized haptic feedback manager.
+@MainActor
 enum HapticService {
     /// Light feedback for selections and toggles.
     static func selection() {
@@ -1187,10 +1191,10 @@ struct SubscriptionView: View {
     /// Display price: for yearly, show monthly equivalent (marketing standard)
     private var displayPrice: String {
         guard let product = plusProduct else {
-            return isYearly ? "CHF 4.99/month" : "CHF 7.99/month"
+            return isYearly ? "CHF 4.99/month" : "CHF 7.95/month"
         }
         if isYearly {
-            // Hardcoded monthly equivalent (59.99/12 = 4.999, marketed as 4.99)
+            // Hardcoded monthly equivalent (59.95/12 ≈ 4.99)
             return "CHF 4.99/month"
         } else {
             return product.displayPrice + "/month"

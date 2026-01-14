@@ -75,7 +75,7 @@
           "codeOffers" : [
 
           ],
-          "displayPrice" : "7.99",
+          "displayPrice" : "7.95",
           "familyShareable" : false,
           "groupNumber" : 1,
           "internalID" : "monthly_001",
@@ -87,7 +87,7 @@
               "locale" : "en_CH"
             }
           ],
-          "productID" : "ch.helvetra.pro.monthly",
+          "productID" : "ch.helvetra.plus.monthly",
           "recurringSubscriptionPeriod" : "P1M",
           "referenceName" : "Helvetra+ Monthly",
           "subscriptionGroupID" : "helvetra_plus",
@@ -100,7 +100,7 @@
           "codeOffers" : [
 
           ],
-          "displayPrice" : "59.99",
+          "displayPrice" : "59.95",
           "familyShareable" : false,
           "groupNumber" : 1,
           "internalID" : "yearly_001",
@@ -112,7 +112,7 @@
               "locale" : "en_CH"
             }
           ],
-          "productID" : "ch.helvetra.pro.yearly",
+          "productID" : "ch.helvetra.plus.yearly",
           "recurringSubscriptionPeriod" : "P1Y",
           "referenceName" : "Helvetra+ Yearly",
           "subscriptionGroupID" : "helvetra_plus",

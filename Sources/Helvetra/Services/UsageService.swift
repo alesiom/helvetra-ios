@@ -3,7 +3,7 @@ import Foundation
 
 /// Tracks character usage against subscription limits.
 @MainActor
-class UsageService: ObservableObject {
+final class UsageService: ObservableObject, @unchecked Sendable {
     static let shared = UsageService()
 
     @Published private(set) var charactersUsed: Int = 0
@@ -19,6 +19,9 @@ class UsageService: ObservableObject {
     // Local storage keys for anonymous iOS user tracking
     private let localUsageKey = "helvetra.local.charactersUsed"
     private let localPeriodStartKey = "helvetra.local.periodStart"
+    // Separate keys for Plus subscribers (so upgrading starts fresh)
+    private let localPlusUsageKey = "helvetra.local.plus.charactersUsed"
+    private let localPlusPeriodStartKey = "helvetra.local.plus.periodStart"
 
     /// Usage as a percentage (0.0 to 1.0).
     var usagePercentage: Double {
@@ -72,7 +75,7 @@ class UsageService: ObservableObject {
 
         // First, check if user has an active StoreKit subscription
         // This takes priority over backend - Apple already verified the purchase
-        let storeKitTier = await StoreService.shared.currentTier
+        let storeKitTier = StoreService.shared.currentTier
         print("[Usage] StoreKit tier: \(storeKitTier.rawValue)")
 
         if storeKitTier == .plus {
@@ -102,20 +105,44 @@ class UsageService: ObservableObject {
 
     /// Apply local StoreKit subscription limits (500k/month).
     private func applyStoreKitSubscription() {
+        let defaults = UserDefaults.standard
+        let calendar = Calendar.current
+        let now = Date()
+
         // Pro tier limits (matches backend tiers.py)
         charactersLimit = 500_000
 
-        // New subscription = fresh usage counter
-        // Previous free tier usage doesn't carry over
-        charactersUsed = 0
-        charactersRemaining = charactersLimit
+        // Check if we need to reset the period (new month)
+        if let periodStart = defaults.object(forKey: localPlusPeriodStartKey) as? Date {
+            let periodStartMonth = calendar.component(.month, from: periodStart)
+            let periodStartYear = calendar.component(.year, from: periodStart)
+            let currentMonth = calendar.component(.month, from: now)
+            let currentYear = calendar.component(.year, from: now)
 
+            // Reset if we're in a new month
+            if currentMonth != periodStartMonth || currentYear != periodStartYear {
+                defaults.set(0, forKey: localPlusUsageKey)
+                defaults.set(now, forKey: localPlusPeriodStartKey)
+                print("[Usage] New month - reset Plus usage counter")
+            }
+        } else {
+            // First time as Plus subscriber - initialize period start
+            defaults.set(now, forKey: localPlusPeriodStartKey)
+            defaults.set(0, forKey: localPlusUsageKey)
+        }
+
+        // Load usage from local storage
+        charactersUsed = defaults.integer(forKey: localPlusUsageKey)
+        charactersRemaining = max(0, charactersLimit - charactersUsed)
         periodType = "monthly"
 
-        // Reset date is approximately 1 month from now
-        // (exact date would come from StoreKit transaction, but this is a reasonable default)
-        let calendar = Calendar.current
-        resetAt = calendar.date(byAdding: .month, value: 1, to: Date())
+        // Calculate reset date (first day of next month)
+        var components = calendar.dateComponents([.year, .month], from: now)
+        components.month! += 1
+        components.day = 1
+        resetAt = calendar.date(from: components)
+
+        print("[Usage] Local Plus tier: \(charactersUsed)/\(charactersLimit)")
     }
 
     /// Apply FREE tier limits for iOS anonymous users (20k/month, tracked locally).
@@ -158,20 +185,23 @@ class UsageService: ObservableObject {
         print("[Usage] Local FREE tier: \(charactersUsed)/\(charactersLimit)")
     }
 
-    /// Record usage locally for anonymous iOS users.
+    /// Record usage locally for anonymous iOS users (both Free and Plus tiers).
     func recordLocalUsage(_ characters: Int) {
+        // Skip if authenticated - backend tracks usage for logged-in users
         guard !AuthService.shared.isAuthenticated else { return }
-        guard StoreService.shared.currentTier != .plus else { return }
 
         let defaults = UserDefaults.standard
-        let currentUsage = defaults.integer(forKey: localUsageKey)
+        let isPlus = StoreService.shared.currentTier == .plus
+        let usageKey = isPlus ? localPlusUsageKey : localUsageKey
+
+        let currentUsage = defaults.integer(forKey: usageKey)
         let newUsage = currentUsage + characters
-        defaults.set(newUsage, forKey: localUsageKey)
+        defaults.set(newUsage, forKey: usageKey)
 
         charactersUsed = newUsage
         charactersRemaining = max(0, charactersLimit - newUsage)
 
-        print("[Usage] Recorded \(characters) chars locally. Total: \(newUsage)/\(charactersLimit)")
+        print("[Usage] Recorded \(characters) chars locally (\(isPlus ? "Plus" : "Free")). Total: \(newUsage)/\(charactersLimit)")
     }
 
     /// Fetch usage for authenticated users.
