@@ -1531,7 +1531,7 @@ struct SettingsView: View {
                         .foregroundStyle(Colors.textSecondaryAdaptive)
                 }
                 .padding(.top, Spacing.md)
-                .padding(.bottom, 220) // Space to scroll above L1 card
+                .padding(.bottom, 250) // Extra space to scroll content above L1 card
             }
             .padding(.horizontal, Spacing.screenPadding)
         }
