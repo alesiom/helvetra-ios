@@ -16,6 +16,10 @@ class UsageService: ObservableObject {
     private let baseURL = "https://helvetra.ch/api/v1"
     private let session: URLSession
 
+    // Local storage keys for anonymous iOS user tracking
+    private let localUsageKey = "helvetra.local.charactersUsed"
+    private let localPeriodStartKey = "helvetra.local.periodStart"
+
     /// Usage as a percentage (0.0 to 1.0).
     var usagePercentage: Double {
         guard charactersLimit > 0 else { return 0 }
@@ -114,16 +118,60 @@ class UsageService: ObservableObject {
         resetAt = calendar.date(byAdding: .month, value: 1, to: Date())
     }
 
-    /// Apply FREE tier limits for iOS anonymous users (20k/month, not tracked).
+    /// Apply FREE tier limits for iOS anonymous users (20k/month, tracked locally).
     private func applyFreeUserLimits() {
-        // iOS anonymous users get FREE tier limits (matches backend tiers.py)
+        let defaults = UserDefaults.standard
+        let calendar = Calendar.current
+        let now = Date()
+
+        // Check if we need to reset the period (new month)
+        if let periodStart = defaults.object(forKey: localPeriodStartKey) as? Date {
+            let periodStartMonth = calendar.component(.month, from: periodStart)
+            let periodStartYear = calendar.component(.year, from: periodStart)
+            let currentMonth = calendar.component(.month, from: now)
+            let currentYear = calendar.component(.year, from: now)
+
+            // Reset if we're in a new month
+            if currentMonth != periodStartMonth || currentYear != periodStartYear {
+                defaults.set(0, forKey: localUsageKey)
+                defaults.set(now, forKey: localPeriodStartKey)
+                print("[Usage] New month - reset local usage counter")
+            }
+        } else {
+            // First time - initialize period start
+            defaults.set(now, forKey: localPeriodStartKey)
+            defaults.set(0, forKey: localUsageKey)
+        }
+
+        // Load usage from local storage
+        charactersUsed = defaults.integer(forKey: localUsageKey)
         charactersLimit = 20_000
-        charactersUsed = 0
-        charactersRemaining = charactersLimit
+        charactersRemaining = max(0, charactersLimit - charactersUsed)
         periodType = "monthly"
 
-        let calendar = Calendar.current
-        resetAt = calendar.date(byAdding: .month, value: 1, to: Date())
+        // Calculate reset date (first day of next month)
+        var components = calendar.dateComponents([.year, .month], from: now)
+        components.month! += 1
+        components.day = 1
+        resetAt = calendar.date(from: components)
+
+        print("[Usage] Local FREE tier: \(charactersUsed)/\(charactersLimit)")
+    }
+
+    /// Record usage locally for anonymous iOS users.
+    func recordLocalUsage(_ characters: Int) {
+        guard !AuthService.shared.isAuthenticated else { return }
+        guard StoreService.shared.currentTier != .plus else { return }
+
+        let defaults = UserDefaults.standard
+        let currentUsage = defaults.integer(forKey: localUsageKey)
+        let newUsage = currentUsage + characters
+        defaults.set(newUsage, forKey: localUsageKey)
+
+        charactersUsed = newUsage
+        charactersRemaining = max(0, charactersLimit - newUsage)
+
+        print("[Usage] Recorded \(characters) chars locally. Total: \(newUsage)/\(charactersLimit)")
     }
 
     /// Fetch usage for authenticated users.

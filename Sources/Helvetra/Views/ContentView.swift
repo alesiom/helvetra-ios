@@ -20,6 +20,14 @@ class StoreService: ObservableObject {
             }
         }
 
+        /// Per-request character limit (matches backend tiers.py).
+        var perRequestLimit: Int {
+            switch self {
+            case .free: return 1_000
+            case .plus: return 5_000
+            }
+        }
+
         var productId: String? {
             switch self {
             case .free: return nil
@@ -405,19 +413,24 @@ struct ContentView: View {
     /// Extra bleed below keyboard to cover rounded corners.
     private let bottomBleed: CGFloat = 50
 
-    /// Character limit based on current subscription tier.
-    private var characterLimit: Int {
-        StoreService.shared.currentTier.characterLimit
+    /// Per-request character limit based on current subscription tier.
+    private var perRequestLimit: Int {
+        StoreService.shared.currentTier.perRequestLimit
     }
 
-    /// Show counter when usage exceeds this percentage.
-    private let counterThreshold: Double = 0.8
+    /// Show counter when approaching per-request limit.
+    private let counterWarningThreshold: Int = 800
 
     // MARK: - Computed Properties
 
-    /// Whether to show the character counter (approaching limit).
+    /// Whether to show the character counter (> 800 chars).
     private var showCharacterCounter: Bool {
-        Double(viewModel.sourceText.count) / Double(characterLimit) >= counterThreshold
+        viewModel.sourceText.count > counterWarningThreshold
+    }
+
+    /// Whether text exceeds per-request limit.
+    private var isOverPerRequestLimit: Bool {
+        viewModel.sourceText.count > perRequestLimit
     }
 
     /// Whether source language was auto-detected.
@@ -700,14 +713,18 @@ struct ContentView: View {
                                 Spacer(minLength: 0)
 
                                 if showCharacterCounter {
-                                    Text("\(viewModel.sourceText.count) / \(characterLimit)")
+                                    Text("\(viewModel.sourceText.count)/\(perRequestLimit)")
                                         .font(Typography.caption)
-                                        .foregroundStyle(viewModel.sourceText.count > characterLimit ? Colors.swissRed : Colors.textSecondaryAdaptive)
+                                        .foregroundStyle(Colors.swissRed)
                                         .offset(y: isSettingsOpen ? 100 : 0)
                                 }
                             }
                             .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
                             .padding(Spacing.cardPadding)
+                            .contentShape(Rectangle())
+                            .onTapGesture {
+                                isSourceFocused = true
+                            }
 
                             // Divider (horizontal on iPhone, vertical on iPad)
                             Rectangle()
@@ -730,6 +747,20 @@ struct ContentView: View {
                                                         .font(dynamicFont(for: ""))
                                                         .foregroundStyle(Colors.textSecondaryAdaptive)
                                                         .offset(y: isSettingsOpen ? 100 : 0)
+                                                } else if isOverPerRequestLimit {
+                                                    // Show upgrade prompt when over per-request limit
+                                                    VStack(alignment: .leading, spacing: Spacing.md) {
+                                                        Text("Text too long for free plan")
+                                                            .font(Typography.bodyMedium)
+                                                            .foregroundStyle(Colors.textPrimaryAdaptive)
+                                                        Text("Upgrade to Helvetra+ for up to 5,000 characters per translation.")
+                                                            .font(Typography.caption)
+                                                            .foregroundStyle(Colors.textSecondaryAdaptive)
+                                                        Button(action: { isSettingsOpen = true }) {
+                                                            Label("Upgrade", systemImage: "arrow.up.circle.fill")
+                                                        }
+                                                        .buttonStyle(.helvetraPrimary)
+                                                    }
                                                 } else if viewModel.isTranslating {
                                                     HStack(spacing: Spacing.sm) {
                                                         ProgressView()
@@ -830,11 +861,6 @@ struct ContentView: View {
                                             .font(.system(size: 10))
                                             .foregroundStyle(Colors.swissRed.opacity(0.8))
                                     }
-                                    if sourceHasSettings {
-                                        Image(systemName: "chevron.right")
-                                            .font(.system(size: 10, weight: .semibold))
-                                            .foregroundStyle(Colors.textSecondaryAdaptive)
-                                    }
                                 }
                             }
                             .buttonStyle(.glassPill)
@@ -855,14 +881,7 @@ struct ContentView: View {
                             Spacer()
 
                             Button(action: { showTargetLanguagePicker = true }) {
-                                HStack(spacing: 4) {
-                                    Text(targetLanguageName)
-                                    if targetHasSettings {
-                                        Image(systemName: "chevron.right")
-                                            .font(.system(size: 10, weight: .semibold))
-                                            .foregroundStyle(Colors.textSecondaryAdaptive)
-                                    }
-                                }
+                                Text(targetLanguageName)
                             }
                             .buttonStyle(.glassPill)
                             .accessibilityLabel(L10n.targetLanguageLabel(targetLanguageName))
@@ -1040,6 +1059,12 @@ struct LanguagePickerSheet: View {
                             Image(systemName: "checkmark")
                                 .foregroundStyle(Colors.swissRed)
                         }
+                        // Show chevron for target picker languages with settings (formality or dialect)
+                        if !isSourcePicker && (languagesWithFormality.contains(code) || languagesWithDialect.contains(code)) {
+                            Image(systemName: "chevron.right")
+                                .font(.system(size: 12, weight: .semibold))
+                                .foregroundStyle(Colors.textSecondaryAdaptive)
+                        }
                     }
                 }
             }
@@ -1108,8 +1133,8 @@ struct LanguagePickerSheet: View {
 
     private func selectLanguage(_ code: String) {
         HapticService.selection()
-        // Show settings screen for languages with formality or dialect options
-        if languagesWithFormality.contains(code) || languagesWithDialect.contains(code) {
+        // Show settings screen only for target picker with formality or dialect options
+        if !isSourcePicker && (languagesWithFormality.contains(code) || languagesWithDialect.contains(code)) {
             pendingLanguage = code
         } else {
             selectedLanguage = code
@@ -1777,6 +1802,10 @@ class TranslationViewModel: ObservableObject {
         let text = sourceText.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !text.isEmpty else { return }
 
+        // Skip translation if over per-request limit (UI shows upgrade prompt)
+        let perRequestLimit = StoreService.shared.currentTier.perRequestLimit
+        guard text.count <= perRequestLimit else { return }
+
         isTranslating = true
         errorMessage = nil
 
@@ -1803,6 +1832,9 @@ class TranslationViewModel: ObservableObject {
                 detectedLanguage = result.detectedSourceLang
             }
             HapticService.success()
+            // Record usage locally for anonymous users, then refresh counter
+            UsageService.shared.recordLocalUsage(text.count)
+            await UsageService.shared.fetchUsage()
         } catch let error as TranslationError {
             errorMessage = error.errorDescription
             translatedText = ""
