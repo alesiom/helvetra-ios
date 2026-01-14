@@ -116,6 +116,7 @@
 
 "limit.title" = "You reached the limit!";
 "limit.message" = "Upgrade to Helvetra+ for up to 5,000 characters per translation.";
+"limit.message.monthly" = "You've used all your free characters this month. Upgrade to Helvetra+ for 500,000 characters.";
 "limit.upgrade" = "Upgrade";
 
 // MARK: - Errors

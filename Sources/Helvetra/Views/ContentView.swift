@@ -433,6 +433,11 @@ struct ContentView: View {
         viewModel.sourceText.count > perRequestLimit
     }
 
+    /// Whether monthly character limit is exhausted.
+    private var isOverMonthlyLimit: Bool {
+        UsageService.shared.charactersRemaining <= 0
+    }
+
     /// Whether source language was auto-detected.
     private var isLanguageDetected: Bool {
         selectedSourceLanguage == "auto" && viewModel.detectedLanguage != nil
@@ -747,6 +752,20 @@ struct ContentView: View {
                                                         .font(dynamicFont(for: ""))
                                                         .foregroundStyle(Colors.textSecondaryAdaptive)
                                                         .offset(y: isSettingsOpen ? 100 : 0)
+                                                } else if isOverMonthlyLimit {
+                                                    // Show upgrade prompt when monthly limit exhausted
+                                                    VStack(alignment: .leading, spacing: Spacing.md) {
+                                                        Text(L10n.limitTitle)
+                                                            .font(Typography.bodyMedium)
+                                                            .foregroundStyle(Colors.textPrimaryAdaptive)
+                                                        Text(L10n.limitMonthlyMessage)
+                                                            .font(Typography.caption)
+                                                            .foregroundStyle(Colors.textSecondaryAdaptive)
+                                                        Button(action: { isSettingsOpen = true }) {
+                                                            Label(L10n.limitUpgrade, systemImage: "arrow.up.circle.fill")
+                                                        }
+                                                        .buttonStyle(.helvetraPrimary)
+                                                    }
                                                 } else if isOverPerRequestLimit {
                                                     // Show upgrade prompt when over per-request limit
                                                     VStack(alignment: .leading, spacing: Spacing.md) {
@@ -793,8 +812,8 @@ struct ContentView: View {
                                         }
                                     }
 
-                                    // Copy button - fixed position, doesn't scroll (hidden when over limit)
-                                    if !viewModel.translatedText.isEmpty && !viewModel.isTranslating && !isOverPerRequestLimit {
+                                    // Copy button - fixed position, doesn't scroll (hidden when over any limit)
+                                    if !viewModel.translatedText.isEmpty && !viewModel.isTranslating && !isOverPerRequestLimit && !isOverMonthlyLimit {
                                         Button(action: { copyTranslation() }) {
                                             Image(systemName: "doc.on.doc")
                                                 .font(.system(size: 22))
@@ -1512,6 +1531,7 @@ struct SettingsView: View {
                         .foregroundStyle(Colors.textSecondaryAdaptive)
                 }
                 .padding(.top, Spacing.md)
+                .padding(.bottom, 220) // Space to scroll above L1 card
             }
             .padding(.horizontal, Spacing.screenPadding)
         }
@@ -1802,9 +1822,10 @@ class TranslationViewModel: ObservableObject {
         let text = sourceText.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !text.isEmpty else { return }
 
-        // Skip translation if over per-request limit (UI shows upgrade prompt)
+        // Skip translation if over any limit (UI shows upgrade prompt)
         let perRequestLimit = StoreService.shared.currentTier.perRequestLimit
         guard text.count <= perRequestLimit else { return }
+        guard UsageService.shared.charactersRemaining > 0 else { return }
 
         isTranslating = true
         errorMessage = nil

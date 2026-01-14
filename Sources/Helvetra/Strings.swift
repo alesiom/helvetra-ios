@@ -121,6 +121,7 @@ enum L10n {
 
     static let limitTitle = NSLocalizedString("limit.title", comment: "")
     static let limitMessage = NSLocalizedString("limit.message", comment: "")
+    static let limitMonthlyMessage = NSLocalizedString("limit.message.monthly", comment: "")
     static let limitUpgrade = NSLocalizedString("limit.upgrade", comment: "")
 
     // MARK: - Errors
