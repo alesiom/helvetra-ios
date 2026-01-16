@@ -3,7 +3,7 @@ import Foundation
 
 /// Tracks character usage against subscription limits.
 @MainActor
-final class UsageService: ObservableObject, @unchecked Sendable {
+final class UsageService: ObservableObject {
     static let shared = UsageService()
 
     @Published private(set) var charactersUsed: Int = 0

@@ -118,7 +118,7 @@ enum KeychainHelper {
 
 /// Manages user authentication with Sign in with Apple and backend integration.
 @MainActor
-final class AuthService: NSObject, ObservableObject, @unchecked Sendable {
+final class AuthService: NSObject, ObservableObject {
     static let shared = AuthService()
 
     /// Current authentication state.

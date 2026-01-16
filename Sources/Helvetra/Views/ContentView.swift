@@ -5,7 +5,7 @@ import SwiftUI
 
 /// Manages in-app purchases and subscriptions using StoreKit 2.
 @MainActor
-final class StoreService: ObservableObject, @unchecked Sendable {
+final class StoreService: ObservableObject {
 
     /// Subscription tiers available for purchase.
     enum SubscriptionTier: String, CaseIterable {
@@ -193,7 +193,7 @@ final class StoreService: ObservableObject, @unchecked Sendable {
     /// Update current tier based on purchases and backend subscription.
     private func updateCurrentTier() {
         // Check StoreKit purchases (App Store subscriptions)
-        if purchasedProductIDs.contains(where: { $0.contains("pro") }) {
+        if purchasedProductIDs.contains(where: { $0.contains("plus") }) {
             currentTier = .plus
             return
         }
@@ -226,7 +226,7 @@ final class StoreService: ObservableObject, @unchecked Sendable {
         for await result in Transaction.currentEntitlements {
             // Only return JWS for pro/plus subscriptions
             if case .verified(let transaction) = result,
-               transaction.productID.contains("pro") {
+               transaction.productID.contains("plus") {
                 return result.jwsRepresentation
             }
         }
@@ -1203,10 +1203,12 @@ struct SubscriptionView: View {
 
     /// For yearly, show the full yearly price in the billing note
     private var billingNoteText: String? {
-        guard isYearly, let product = plusProduct else {
-            return nil
+        guard isYearly else { return nil }
+        if let product = plusProduct {
+            return product.displayPrice + " " + L10n.billedYearly
         }
-        return product.displayPrice + " " + L10n.billedYearly
+        // Fallback when products not loaded
+        return "CHF 59.95 " + L10n.billedYearly
     }
 
     var body: some View {
