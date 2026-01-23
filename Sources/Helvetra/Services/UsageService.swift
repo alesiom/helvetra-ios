@@ -34,14 +34,17 @@ final class UsageService: ObservableObject {
         "\(formatNumber(charactersUsed)) / \(formatNumber(charactersLimit))"
     }
 
-    /// Period description (e.g., "Resets monthly" or "Resets Jan 6").
+    /// Period description showing reset date (e.g., "Resets Feb 15").
     var periodText: String {
-        if let resetAt = resetAt {
-            let formatter = DateFormatter()
-            formatter.dateFormat = "MMM d"
-            return "Resets \(formatter.string(from: resetAt))"
+        guard let resetDate = resetAt else {
+            return periodType == "weekly"
+                ? NSLocalizedString("usage.period.weekly", comment: "")
+                : NSLocalizedString("usage.period.monthly", comment: "")
         }
-        return periodType == "weekly" ? "Resets weekly" : "Resets monthly"
+        let formatter = DateFormatter()
+        formatter.setLocalizedDateFormatFromTemplate("MMM d")
+        let dateString = formatter.string(from: resetDate)
+        return String(format: NSLocalizedString("usage.period.date", comment: ""), dateString)
     }
 
     private var storeServiceObserver: AnyCancellable?
@@ -60,8 +63,9 @@ final class UsageService: ObservableObject {
             Task { await self?.fetchUsage() }
         }
 
-        // Listen for StoreKit tier changes to refresh usage
+        // Listen for StoreKit tier changes to refresh usage (skip initial value)
         storeServiceObserver = StoreService.shared.$currentTier
+            .dropFirst()  // Prevent unnecessary fetch on init
             .receive(on: DispatchQueue.main)
             .sink { [weak self] _ in
                 Task { await self?.fetchUsage() }
@@ -103,27 +107,24 @@ final class UsageService: ObservableObject {
         }
     }
 
-    /// Apply local StoreKit subscription limits (500k/month).
+    /// Apply local StoreKit subscription limits (500k/month, rolling 30-day period).
     private func applyStoreKitSubscription() {
         let defaults = UserDefaults.standard
-        let calendar = Calendar.current
         let now = Date()
+        let periodDays = 30
 
         // Pro tier limits (matches backend tiers.py)
         charactersLimit = 500_000
 
-        // Check if we need to reset the period (new month)
+        // Check if we need to reset the period (30 days elapsed)
         if let periodStart = defaults.object(forKey: localPlusPeriodStartKey) as? Date {
-            let periodStartMonth = calendar.component(.month, from: periodStart)
-            let periodStartYear = calendar.component(.year, from: periodStart)
-            let currentMonth = calendar.component(.month, from: now)
-            let currentYear = calendar.component(.year, from: now)
+            let daysSincePeriodStart = Calendar.current.dateComponents([.day], from: periodStart, to: now).day ?? 0
 
-            // Reset if we're in a new month
-            if currentMonth != periodStartMonth || currentYear != periodStartYear {
+            // Reset if 30+ days have passed since period start
+            if daysSincePeriodStart >= periodDays {
                 defaults.set(0, forKey: localPlusUsageKey)
                 defaults.set(now, forKey: localPlusPeriodStartKey)
-                print("[Usage] New month - reset Plus usage counter")
+                print("[Usage] 30 days elapsed - reset Plus usage counter")
             }
         } else {
             // First time as Plus subscriber - initialize period start
@@ -136,33 +137,29 @@ final class UsageService: ObservableObject {
         charactersRemaining = max(0, charactersLimit - charactersUsed)
         periodType = "monthly"
 
-        // Calculate reset date (first day of next month)
-        var components = calendar.dateComponents([.year, .month], from: now)
-        components.month! += 1
-        components.day = 1
-        resetAt = calendar.date(from: components)
+        // Calculate reset date (30 days from period start)
+        if let periodStart = defaults.object(forKey: localPlusPeriodStartKey) as? Date {
+            resetAt = Calendar.current.date(byAdding: .day, value: periodDays, to: periodStart)
+        }
 
         print("[Usage] Local Plus tier: \(charactersUsed)/\(charactersLimit)")
     }
 
-    /// Apply FREE tier limits for iOS anonymous users (20k/month, tracked locally).
+    /// Apply FREE tier limits for iOS anonymous users (20k/month, rolling 30-day period).
     private func applyFreeUserLimits() {
         let defaults = UserDefaults.standard
-        let calendar = Calendar.current
         let now = Date()
+        let periodDays = 30
 
-        // Check if we need to reset the period (new month)
+        // Check if we need to reset the period (30 days elapsed)
         if let periodStart = defaults.object(forKey: localPeriodStartKey) as? Date {
-            let periodStartMonth = calendar.component(.month, from: periodStart)
-            let periodStartYear = calendar.component(.year, from: periodStart)
-            let currentMonth = calendar.component(.month, from: now)
-            let currentYear = calendar.component(.year, from: now)
+            let daysSincePeriodStart = Calendar.current.dateComponents([.day], from: periodStart, to: now).day ?? 0
 
-            // Reset if we're in a new month
-            if currentMonth != periodStartMonth || currentYear != periodStartYear {
+            // Reset if 30+ days have passed since period start
+            if daysSincePeriodStart >= periodDays {
                 defaults.set(0, forKey: localUsageKey)
                 defaults.set(now, forKey: localPeriodStartKey)
-                print("[Usage] New month - reset local usage counter")
+                print("[Usage] 30 days elapsed - reset local usage counter")
             }
         } else {
             // First time - initialize period start
@@ -176,11 +173,10 @@ final class UsageService: ObservableObject {
         charactersRemaining = max(0, charactersLimit - charactersUsed)
         periodType = "monthly"
 
-        // Calculate reset date (first day of next month)
-        var components = calendar.dateComponents([.year, .month], from: now)
-        components.month! += 1
-        components.day = 1
-        resetAt = calendar.date(from: components)
+        // Calculate reset date (30 days from period start)
+        if let periodStart = defaults.object(forKey: localPeriodStartKey) as? Date {
+            resetAt = Calendar.current.date(byAdding: .day, value: periodDays, to: periodStart)
+        }
 
         print("[Usage] Local FREE tier: \(charactersUsed)/\(charactersLimit)")
     }

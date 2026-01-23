@@ -72,7 +72,7 @@
 "settings.about.terms" = "Terms of Service";
 "settings.about.feedback" = "Send Feedback";
 "settings.about.feedback.copied" = "Email address copied to clipboard: gruezi@helvetra.ch";
-"settings.about.footer" = "Made with ❤️ in Switzerland";
+"settings.about.footer" = "Made in Switzerland";
 
 // Danger Zone
 "settings.danger.title" = "Danger Zone";
@@ -93,8 +93,7 @@
 "subscription.subscribe" = "Subscribe";
 "subscription.current.plan" = "Current Plan";
 "subscription.restore" = "Restore Purchases";
-"subscription.success.title" = "Purchase Successful";
-"subscription.success.message" = "Thank you for upgrading! Your new plan is now active.";
+"subscription.restore.none" = "No purchases found";
 
 // Features
 "subscription.feature.characters" = "500,000 characters per month";
@@ -105,6 +104,7 @@
 
 "usage.period.weekly" = "Resets weekly";
 "usage.period.monthly" = "Resets monthly";
+"usage.period.date" = "Resets %@";
 
 // MARK: - Common
 

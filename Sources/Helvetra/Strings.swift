@@ -98,8 +98,7 @@ enum L10n {
     static let subscribe = NSLocalizedString("subscription.subscribe", comment: "")
     static let currentPlanLabel = NSLocalizedString("subscription.current.plan", comment: "")
     static let restorePurchases = NSLocalizedString("subscription.restore", comment: "")
-    static let purchaseSuccessTitle = NSLocalizedString("subscription.success.title", comment: "")
-    static let purchaseSuccessMessage = NSLocalizedString("subscription.success.message", comment: "")
+    static let noPurchasesFound = NSLocalizedString("subscription.restore.none", comment: "")
 
     // Features
     static let featureCharacters = NSLocalizedString("subscription.feature.characters", comment: "")

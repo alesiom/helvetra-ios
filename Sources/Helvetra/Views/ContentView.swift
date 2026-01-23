@@ -87,8 +87,8 @@ final class StoreService: ObservableObject {
         isLoading = false
     }
 
-    /// Purchase a product.
-    func purchase(_ product: Product) async throws {
+    /// Purchase a product. Returns true if purchase succeeded, false if cancelled/pending.
+    func purchase(_ product: Product) async throws -> Bool {
         let result = try await product.purchase()
 
         switch result {
@@ -96,32 +96,37 @@ final class StoreService: ObservableObject {
             let transaction = try checkVerified(verification)
             print("[StoreKit] Purchase successful: \(transaction.productID)")
 
-            // Verify with backend to sync subscription status
-            let isAuth = AuthService.shared.isAuthenticated
-            print("[StoreKit] User authenticated: \(isAuth)")
-
-            if isAuth {
-                await verifyWithBackend(verification: verification)
-            } else {
-                print("[StoreKit] Skipping backend verification - user not logged in")
+            // Immediately update tier for instant UI feedback
+            // Don't wait for entitlements iteration which can be slow
+            if transaction.productID.contains("plus") {
+                currentTier = .plus
+                purchasedProductIDs.insert(transaction.productID)
             }
 
-            await updatePurchasedProducts()
+            // Finish the transaction first (required by StoreKit)
             await transaction.finish()
+            print("[StoreKit] Transaction finished")
 
-            // Refresh usage data to reflect new subscription
-            print("[StoreKit] Refreshing usage data...")
-            await UsageService.shared.fetchUsage()
-            print("[StoreKit] Usage limit now: \(UsageService.shared.charactersLimit)")
+            // Run backend sync and usage refresh in parallel (non-blocking for UI)
+            Task {
+                let isAuth = AuthService.shared.isAuthenticated
+                if isAuth {
+                    await verifyWithBackend(verification: verification)
+                }
+                await UsageService.shared.fetchUsage()
+                print("[StoreKit] Background sync complete")
+            }
+            return true
 
         case .pending:
-            break
+            return false
 
         case .userCancelled:
-            break
+            print("[StoreKit] Purchase cancelled by user")
+            return false
 
         @unknown default:
-            break
+            return false
         }
     }
 
@@ -129,19 +134,31 @@ final class StoreService: ObservableObject {
     func restorePurchases() async {
         print("[StoreKit] Restoring purchases...")
 
-        // Sync any existing entitlements with backend
-        if AuthService.shared.isAuthenticated {
-            for await result in Transaction.currentEntitlements {
-                if case .verified = result {
-                    print("[StoreKit] Found entitlement, verifying with backend...")
-                    await verifyWithBackend(verification: result)
+        // Iterate entitlements once, updating tier immediately when found
+        for await result in Transaction.currentEntitlements {
+            if case .verified(let transaction) = result {
+                print("[StoreKit] Found entitlement: \(transaction.productID)")
+                if transaction.productID.contains("plus") {
+                    currentTier = .plus
+                    purchasedProductIDs.insert(transaction.productID)
+                }
+
+                // Sync with backend in background (non-blocking)
+                if AuthService.shared.isAuthenticated {
+                    Task {
+                        await verifyWithBackend(verification: result)
+                    }
                 }
             }
         }
 
-        await updatePurchasedProducts()
-        await UsageService.shared.fetchUsage()
-        print("[StoreKit] Restore complete, limit: \(UsageService.shared.charactersLimit)")
+        // Refresh usage in background
+        Task {
+            await UsageService.shared.fetchUsage()
+            print("[StoreKit] Restore sync complete, limit: \(UsageService.shared.charactersLimit)")
+        }
+
+        print("[StoreKit] Restore UI complete")
     }
 
     /// Update the set of purchased products.
@@ -382,6 +399,11 @@ struct ContentView: View {
     @State private var showCopyConfirmation: Bool = false
     @State private var inputFontSize: CGFloat = 28
 
+    // Cached service values to avoid re-render cascades from ObservableObject access
+    @State private var cachedIsAuthenticated: Bool = false
+    @State private var cachedPerRequestLimit: Int = 1000
+    @State private var cachedCharactersRemaining: Int = 20000
+
     // MARK: - Helpers
 
     /// Get localized language name for a language code.
@@ -419,7 +441,7 @@ struct ContentView: View {
 
     /// Per-request character limit based on current subscription tier.
     private var perRequestLimit: Int {
-        StoreService.shared.currentTier.perRequestLimit
+        cachedPerRequestLimit
     }
 
     /// Show counter when approaching per-request limit.
@@ -439,7 +461,7 @@ struct ContentView: View {
 
     /// Whether monthly character limit is exhausted.
     private var isOverMonthlyLimit: Bool {
-        UsageService.shared.charactersRemaining <= 0
+        cachedCharactersRemaining <= 0
     }
 
     /// Whether source language was auto-detected.
@@ -595,9 +617,10 @@ struct ContentView: View {
                     // Top spacer - shrinks to 0 when keyboard appears, expands when settings open
                     let topSpacing = useSideBySideLayout ? safeTop + 50 : safeTop + settingsAreaHeight
                     // Visible card height when settings open - enough to show first line of text
-                    let settingsOffset: CGFloat = AuthService.shared.isAuthenticated ? 200 : 160
+                    let settingsOffset: CGFloat = cachedIsAuthenticated ? 200 : 160
+                    let spacerHeight = isSettingsOpen ? max(0, geometry.size.height - settingsOffset) : (isKeyboardVisible ? 0 : topSpacing)
                     Color.clear
-                        .frame(height: isSettingsOpen ? geometry.size.height - settingsOffset : (isKeyboardVisible ? 0 : topSpacing))
+                        .frame(height: spacerHeight.isNaN ? 0 : spacerHeight)
 
                     // Swipe-down indicator (visible when keyboard is open)
                     if isKeyboardVisible && !isSettingsOpen {
@@ -678,6 +701,14 @@ struct ContentView: View {
                                                 .onChange(of: selectedDialect) { _, _ in
                                                     syncViewModelSettings()
                                                     viewModel.retranslate()
+                                                }
+                                                .onChange(of: viewModel.detectedLanguage) { _, detected in
+                                                    // Prevent same language when auto-detect matches target
+                                                    guard selectedSourceLanguage == "auto",
+                                                          let detected = detected,
+                                                          detected == selectedTargetLanguage else { return }
+                                                    // Switch target to a different language (default to German if detecting Swiss German)
+                                                    selectedTargetLanguage = detected == "gsw" ? "de" : "gsw"
                                                 }
                                                 .onChange(of: isSourceFocused) { _, focused in
                                                     if focused && isSettingsOpen {
@@ -999,6 +1030,26 @@ struct ContentView: View {
             )
             .presentationDetents([.medium, .large])
         }
+        .task {
+            // Initialize cached values from services to prevent re-render cascades.
+            // These values are accessed in computed properties - direct service access
+            // would trigger service initialization during view rendering.
+            cachedIsAuthenticated = AuthService.shared.isAuthenticated
+            cachedPerRequestLimit = StoreService.shared.currentTier.perRequestLimit
+            cachedCharactersRemaining = UsageService.shared.charactersRemaining
+        }
+        .onChange(of: isSettingsOpen) { _, isOpen in
+            // Refresh cached values when settings closes (handles post-purchase updates)
+            if !isOpen {
+                cachedIsAuthenticated = AuthService.shared.isAuthenticated
+                cachedPerRequestLimit = StoreService.shared.currentTier.perRequestLimit
+                cachedCharactersRemaining = UsageService.shared.charactersRemaining
+            }
+        }
+        .onChange(of: viewModel.translatedText) { _, _ in
+            // Refresh usage after each translation so limit indicators stay accurate
+            cachedCharactersRemaining = UsageService.shared.charactersRemaining
+        }
     }
 }
 
@@ -1182,7 +1233,6 @@ struct SubscriptionView: View {
     @State private var isYearly: Bool = true
     @State private var isPurchasing: Bool = false
     @State private var purchaseError: String?
-    @State private var showSuccess: Bool = false
 
     private var plusProduct: Product? {
         storeService.products.first { $0.id.contains(isYearly ? "yearly" : "monthly") }
@@ -1228,8 +1278,16 @@ struct SubscriptionView: View {
                     }
                     .padding(.top, Spacing.md)
 
-                    // Billing toggle
+                    // Billing toggle - centered layout to prevent shifts
                     HStack(spacing: Spacing.sm) {
+                        // Left spacer to balance the badge on the right
+                        Text(L10n.save20)
+                            .font(Typography.caption)
+                            .foregroundStyle(.clear)
+                            .padding(.horizontal, Spacing.xs)
+                            .padding(.vertical, 2)
+                            .background { Capsule().fill(.clear) }
+
                         Text(L10n.monthly)
                             .font(Typography.labelMedium)
                             .foregroundStyle(isYearly ? Colors.textSecondaryAdaptive : Colors.swissRed)
@@ -1242,14 +1300,14 @@ struct SubscriptionView: View {
                             .font(Typography.labelMedium)
                             .foregroundStyle(isYearly ? Colors.swissRed : Colors.textSecondaryAdaptive)
 
-                        if isYearly {
-                            Text(L10n.save20)
-                                .font(Typography.caption)
-                                .foregroundStyle(.white)
-                                .padding(.horizontal, Spacing.xs)
-                                .padding(.vertical, 2)
-                                .background { Capsule().fill(Colors.swissRed) }
-                        }
+                        // Badge - always present, visibility controlled by opacity
+                        Text(L10n.save20)
+                            .font(Typography.caption)
+                            .foregroundStyle(.white)
+                            .padding(.horizontal, Spacing.xs)
+                            .padding(.vertical, 2)
+                            .background { Capsule().fill(Colors.swissRed) }
+                            .opacity(isYearly ? 1 : 0)
                     }
 
                     // Helvetra+ plan
@@ -1282,6 +1340,23 @@ struct SubscriptionView: View {
                             .foregroundStyle(Colors.swissRed)
                             .multilineTextAlignment(.center)
                     }
+
+                    // Terms and Privacy links (required by App Store)
+                    HStack(spacing: Spacing.md) {
+                        Link(destination: URL(string: "https://helvetra.ch/terms")!) {
+                            Text(L10n.termsOfService)
+                                .font(Typography.caption)
+                                .foregroundStyle(Colors.textSecondaryAdaptive)
+                        }
+                        Text("·")
+                            .foregroundStyle(Colors.textSecondaryAdaptive)
+                        Link(destination: URL(string: "https://helvetra.ch/privacy")!) {
+                            Text(L10n.privacyPolicy)
+                                .font(Typography.caption)
+                                .foregroundStyle(Colors.textSecondaryAdaptive)
+                        }
+                    }
+                    .padding(.top, Spacing.md)
                 }
                 .padding(.horizontal, Spacing.screenPadding)
             }
@@ -1291,11 +1366,6 @@ struct SubscriptionView: View {
                 ToolbarItem(placement: .topBarTrailing) {
                     Button(L10n.done) { dismiss() }
                 }
-            }
-            .alert(L10n.purchaseSuccessTitle, isPresented: $showSuccess) {
-                Button(L10n.ok) { dismiss() }
-            } message: {
-                Text(L10n.purchaseSuccessMessage)
             }
         }
     }
@@ -1309,9 +1379,12 @@ struct SubscriptionView: View {
         isPurchasing = true
         purchaseError = nil
         do {
-            try await storeService.purchase(product)
-            HapticService.success()
-            showSuccess = true
+            let success = try await storeService.purchase(product)
+            if success {
+                HapticService.success()
+                dismiss()
+            }
+            // If cancelled, just stay on this screen
         } catch {
             HapticService.impact(.heavy)
             purchaseError = error.localizedDescription
@@ -1325,7 +1398,10 @@ struct SubscriptionView: View {
         isPurchasing = false
         if storeService.currentTier != .free {
             HapticService.success()
-            showSuccess = true
+            dismiss()
+        } else {
+            // No purchases found - show feedback
+            purchaseError = L10n.noPurchasesFound
         }
     }
 }
@@ -1634,6 +1710,7 @@ struct UsageBarView: View {
         VStack(alignment: .leading, spacing: Spacing.xs) {
             // Progress bar
             GeometryReader { geometry in
+                let progressWidth = max(0, geometry.size.width * usageService.usagePercentage)
                 ZStack(alignment: .leading) {
                     // Background track
                     RoundedRectangle(cornerRadius: 4)
@@ -1642,7 +1719,7 @@ struct UsageBarView: View {
                     // Progress fill
                     RoundedRectangle(cornerRadius: 4)
                         .fill(progressColor)
-                        .frame(width: geometry.size.width * usageService.usagePercentage)
+                        .frame(width: progressWidth.isNaN ? 0 : progressWidth)
                 }
             }
             .frame(height: 8)

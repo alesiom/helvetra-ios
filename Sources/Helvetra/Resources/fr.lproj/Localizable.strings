@@ -72,7 +72,7 @@
 "settings.about.terms" = "Conditions d'utilisation";
 "settings.about.feedback" = "Envoyer un commentaire";
 "settings.about.feedback.copied" = "Adresse e-mail copiée : gruezi@helvetra.ch";
-"settings.about.footer" = "Fait avec ❤️ en Suisse";
+"settings.about.footer" = "Développé en Suisse";
 
 // Danger Zone
 "settings.danger.title" = "Zone de danger";
@@ -93,8 +93,7 @@
 "subscription.subscribe" = "S'abonner";
 "subscription.current.plan" = "Forfait actuel";
 "subscription.restore" = "Restaurer les achats";
-"subscription.success.title" = "Achat réussi";
-"subscription.success.message" = "Merci pour votre mise à niveau ! Votre nouveau forfait est maintenant actif.";
+"subscription.restore.none" = "Aucun achat trouvé";
 
 // Features
 "subscription.feature.characters" = "500 000 caractères par mois";
@@ -105,6 +104,7 @@
 
 "usage.period.weekly" = "Réinitialisé chaque semaine";
 "usage.period.monthly" = "Réinitialisé chaque mois";
+"usage.period.date" = "Réinitialisation le %@";
 
 // MARK: - Common
 

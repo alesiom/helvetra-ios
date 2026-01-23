@@ -63,7 +63,10 @@ German, French, Italian, English, Romansh, Swiss German — all combinations.
 
 Questions? Contact us at gruezi@helvetra.ch
 
-Made with ❤️ in Switzerland
+Privacy Policy: https://helvetra.ch/privacy
+Terms of Use: https://helvetra.ch/terms
+
+Made in Switzerland
 ```
 
 ---
@@ -115,7 +118,10 @@ Deutsch, Französisch, Italienisch, Englisch, Rätoromanisch, Schweizerdeutsch �
 
 Fragen? Kontaktiere uns unter gruezi@helvetra.ch
 
-Mit ❤️ in der Schweiz gemacht
+Datenschutz: https://helvetra.ch/privacy
+Nutzungsbedingungen: https://helvetra.ch/terms
+
+Entwickelt in der Schweiz
 ```
 
 ---
@@ -167,7 +173,10 @@ Allemand, français, italien, anglais, romanche, suisse allemand — toutes les 
 
 Des questions? Contactez-nous à gruezi@helvetra.ch
 
-Fait avec ❤️ en Suisse
+Politique de confidentialité: https://helvetra.ch/privacy
+Conditions d'utilisation: https://helvetra.ch/terms
+
+Développé en Suisse
 ```
 
 ---
@@ -219,7 +228,10 @@ Tedesco, francese, italiano, inglese, romancio, svizzero tedesco — tutte le co
 
 Domande? Contattaci a gruezi@helvetra.ch
 
-Fatto con ❤️ in Svizzera
+Privacy Policy: https://helvetra.ch/privacy
+Termini di utilizzo: https://helvetra.ch/terms
+
+Sviluppato in Svizzera
 ```
 
 ---

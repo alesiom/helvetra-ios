@@ -50,7 +50,7 @@ private struct AuthResponseData: Decodable {
 
 // MARK: - Keychain Helper
 
-/// Secure storage for authentication tokens.
+/// Secure storage for authentication tokens with enhanced security attributes.
 enum KeychainHelper {
     private static let service = "ch.helvetra.app"
 
@@ -63,19 +63,36 @@ enum KeychainHelper {
         case userTier = "user_tier"
     }
 
-    static func save(_ value: String, for key: Key) {
-        let data = value.data(using: .utf8)!
+    /// Save a value to keychain with secure accessibility settings.
+    /// Items are only accessible when device is unlocked and tied to this device.
+    @discardableResult
+    static func save(_ value: String, for key: Key) -> Bool {
+        guard let data = value.data(using: .utf8) else {
+            print("[Keychain] ERROR: Failed to encode value for \(key.rawValue)")
+            return false
+        }
+
+        // Delete existing item first
+        delete(for: key)
+
         let query: [String: Any] = [
             kSecClass as String: kSecClassGenericPassword,
             kSecAttrService as String: service,
             kSecAttrAccount as String: key.rawValue,
             kSecValueData as String: data,
+            // Security: Only accessible when device is unlocked, not included in backups
+            kSecAttrAccessible as String: kSecAttrAccessibleWhenUnlockedThisDeviceOnly,
         ]
 
-        SecItemDelete(query as CFDictionary)
-        SecItemAdd(query as CFDictionary, nil)
+        let status = SecItemAdd(query as CFDictionary, nil)
+        if status != errSecSuccess {
+            print("[Keychain] ERROR: Failed to save \(key.rawValue), status: \(status)")
+            return false
+        }
+        return true
     }
 
+    /// Load a value from keychain.
     static func load(for key: Key) -> String? {
         let query: [String: Any] = [
             kSecClass as String: kSecClassGenericPassword,
@@ -92,21 +109,28 @@ enum KeychainHelper {
               let data = result as? Data,
               let value = String(data: data, encoding: .utf8)
         else {
+            if status != errSecItemNotFound {
+                print("[Keychain] ERROR: Failed to load \(key.rawValue), status: \(status)")
+            }
             return nil
         }
 
         return value
     }
 
-    static func delete(for key: Key) {
+    /// Delete a specific key from keychain.
+    @discardableResult
+    static func delete(for key: Key) -> Bool {
         let query: [String: Any] = [
             kSecClass as String: kSecClassGenericPassword,
             kSecAttrService as String: service,
             kSecAttrAccount as String: key.rawValue,
         ]
-        SecItemDelete(query as CFDictionary)
+        let status = SecItemDelete(query as CFDictionary)
+        return status == errSecSuccess || status == errSecItemNotFound
     }
 
+    /// Delete all stored credentials.
     static func deleteAll() {
         for key in [Key.accessToken, .refreshToken, .tokenExpiry, .userId, .userEmail, .userTier] {
             delete(for: key)
@@ -136,6 +160,9 @@ final class AuthService: NSObject, ObservableObject {
     private let baseURL = "https://helvetra.ch/api/v1"
     private let session: URLSession
     private var signInContinuation: CheckedContinuation<ASAuthorization, Error>?
+
+    /// Lock to prevent concurrent token refresh attempts.
+    private var isRefreshingToken: Bool = false
 
     // MARK: - Debug Mode
 
@@ -324,13 +351,24 @@ final class AuthService: NSObject, ObservableObject {
     }
 
     /// Refresh the access token using the refresh token.
+    /// Uses a lock to prevent concurrent refresh attempts.
     func refreshTokenIfNeeded() async {
+        // Prevent concurrent refresh attempts
+        guard !isRefreshingToken else {
+            // Wait briefly for ongoing refresh to complete
+            try? await Task.sleep(nanoseconds: 100_000_000) // 100ms
+            return
+        }
+
         guard let refreshToken = KeychainHelper.load(for: .refreshToken),
               !refreshToken.isEmpty
         else {
             await signOut()
             return
         }
+
+        isRefreshingToken = true
+        defer { isRefreshingToken = false }
 
         do {
             let url = URL(string: "\(baseURL)/auth/refresh")!
