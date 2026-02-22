@@ -94,6 +94,8 @@
 "subscription.current.plan" = "Piano attuale";
 "subscription.restore" = "Ripristina acquisti";
 "subscription.restore.none" = "Nessun acquisto trovato";
+"subscription.loading" = "Caricamento abbonamenti...";
+"subscription.load.failed" = "Impossibile caricare gli abbonamenti. Verifica la connessione e riprova.";
 
 // Features
 "subscription.feature.characters" = "500'000 caratteri al mese";
@@ -112,6 +114,7 @@
 "common.back" = "Indietro";
 "common.ok" = "OK";
 "common.cancel" = "Annulla";
+"common.tryagain" = "Riprova";
 
 // MARK: - Limit Reached
 

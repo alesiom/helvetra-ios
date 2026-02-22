@@ -94,6 +94,8 @@
 "subscription.current.plan" = "Aktuelles Abo";
 "subscription.restore" = "Käufe wiederherstellen";
 "subscription.restore.none" = "Keine Käufe gefunden";
+"subscription.loading" = "Abos werden geladen...";
+"subscription.load.failed" = "Abos konnten nicht geladen werden. Bitte überprüfe deine Verbindung und versuche es erneut.";
 
 // Features
 "subscription.feature.characters" = "500'000 Zeichen pro Monat";
@@ -112,6 +114,7 @@
 "common.back" = "Zurück";
 "common.ok" = "OK";
 "common.cancel" = "Abbrechen";
+"common.tryagain" = "Erneut versuchen";
 
 // MARK: - Limit Reached
 

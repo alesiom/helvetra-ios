@@ -99,6 +99,8 @@ enum L10n {
     static let currentPlanLabel = NSLocalizedString("subscription.current.plan", comment: "")
     static let restorePurchases = NSLocalizedString("subscription.restore", comment: "")
     static let noPurchasesFound = NSLocalizedString("subscription.restore.none", comment: "")
+    static let subscriptionLoading = NSLocalizedString("subscription.loading", comment: "")
+    static let subscriptionLoadFailed = NSLocalizedString("subscription.load.failed", comment: "")
 
     // Features
     static let featureCharacters = NSLocalizedString("subscription.feature.characters", comment: "")
@@ -116,6 +118,7 @@ enum L10n {
     static let back = NSLocalizedString("common.back", comment: "")
     static let ok = NSLocalizedString("common.ok", comment: "")
     static let cancel = NSLocalizedString("common.cancel", comment: "")
+    static let tryAgain = NSLocalizedString("common.tryagain", comment: "")
 
     // MARK: - Limit Reached
 

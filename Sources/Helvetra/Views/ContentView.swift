@@ -42,6 +42,7 @@ final class StoreService: ObservableObject {
     @Published private(set) var purchasedProductIDs: Set<String> = []
     @Published private(set) var currentTier: SubscriptionTier = .free
     @Published private(set) var isLoading: Bool = false
+    @Published private(set) var productLoadError: String? = nil
 
     private var updateListenerTask: Task<Void, Error>?
     private let baseURL = "https://helvetra.ch/api/v1"
@@ -79,10 +80,12 @@ final class StoreService: ObservableObject {
     /// Load available products from App Store.
     func loadProducts() async {
         isLoading = true
+        productLoadError = nil
         do {
             products = try await Product.products(for: productIDs)
         } catch {
             print("Failed to load products: \(error)")
+            productLoadError = L10n.subscriptionLoadFailed
         }
         isLoading = false
     }
@@ -1310,20 +1313,53 @@ struct SubscriptionView: View {
                             .opacity(isYearly ? 1 : 0)
                     }
 
-                    // Helvetra+ plan
-                    PlanCard(
-                        name: "Helvetra+",
-                        price: displayPrice,
-                        billingNote: billingNoteText,
-                        features: [
-                            L10n.featureCharacters,
-                            L10n.featurePriority,
-                            L10n.featureSupport
-                        ],
-                        isCurrentPlan: storeService.currentTier == .plus,
-                        isLoading: isPurchasing,
-                        onPurchase: { await purchasePlus() }
-                    )
+                    // Helvetra+ plan (three-state: loading, error, ready)
+                    if storeService.isLoading && storeService.products.isEmpty {
+                        VStack(spacing: Spacing.sm) {
+                            ProgressView()
+                            Text(L10n.subscriptionLoading)
+                                .font(Typography.labelMedium)
+                                .foregroundStyle(Colors.textSecondaryAdaptive)
+                        }
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, Spacing.xl)
+                    } else if storeService.products.isEmpty {
+                        VStack(spacing: Spacing.sm) {
+                            Image(systemName: "exclamationmark.triangle")
+                                .font(.title2)
+                                .foregroundStyle(Colors.swissRed)
+                            Text(storeService.productLoadError ?? L10n.subscriptionLoadFailed)
+                                .font(Typography.labelMedium)
+                                .foregroundStyle(Colors.textSecondaryAdaptive)
+                                .multilineTextAlignment(.center)
+                            Button {
+                                Task { await storeService.loadProducts() }
+                            } label: {
+                                Text(L10n.tryAgain)
+                                    .font(Typography.labelMedium)
+                                    .foregroundStyle(.white)
+                                    .padding(.horizontal, Spacing.md)
+                                    .padding(.vertical, Spacing.sm)
+                                    .background(Colors.swissRed, in: Capsule())
+                            }
+                        }
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, Spacing.xl)
+                    } else {
+                        PlanCard(
+                            name: "Helvetra+",
+                            price: displayPrice,
+                            billingNote: billingNoteText,
+                            features: [
+                                L10n.featureCharacters,
+                                L10n.featurePriority,
+                                L10n.featureSupport
+                            ],
+                            isCurrentPlan: storeService.currentTier == .plus,
+                            isLoading: isPurchasing,
+                            onPurchase: { await purchasePlus() }
+                        )
+                    }
 
                     // Restore purchases
                     Button(action: { Task { await restorePurchases() } }) {
@@ -1367,11 +1403,22 @@ struct SubscriptionView: View {
                     Button(L10n.done) { dismiss() }
                 }
             }
+            .task {
+                if storeService.products.isEmpty {
+                    await storeService.loadProducts()
+                }
+            }
         }
     }
 
     private func purchasePlus() async {
-        guard let product = plusProduct else { return }
+        if plusProduct == nil {
+            await storeService.loadProducts()
+        }
+        guard let product = plusProduct else {
+            purchaseError = L10n.subscriptionLoadFailed
+            return
+        }
         await purchase(product)
     }
 
@@ -1655,6 +1702,7 @@ struct SettingsView: View {
         }
         .sheet(isPresented: $showSubscription) {
             SubscriptionView()
+                .presentationDetents([.medium, .large])
         }
         .confirmationDialog(
             L10n.deleteAccountTitle,
