@@ -164,30 +164,28 @@ final class AuthService: NSObject, ObservableObject {
     /// Lock to prevent concurrent token refresh attempts.
     private var isRefreshingToken: Bool = false
 
-    // MARK: - Debug Mode
-
-    /// Set to true to fake authenticated state for UI testing/screenshots.
-    /// Remember to set back to false before release!
-    private let debugFakeAuth = false
-
     private override init() {
         let config = URLSessionConfiguration.default
         config.timeoutIntervalForRequest = 30
         self.session = URLSession(configuration: config)
         super.init()
 
+        #if DEBUG
+        // Set to true to fake authenticated state for UI testing/screenshots.
+        let debugFakeAuth = false
         if debugFakeAuth {
-            // Fake authenticated state for UI testing
             currentUser = AuthUser(
                 id: "debug-user",
-                email: "alex@helvetra.ch",
+                email: "test@example.com",
                 emailVerified: true,
                 tier: "plus"
             )
             isAuthenticated = true
-        } else {
-            restoreSession()
+            return
         }
+        #endif
+
+        restoreSession()
     }
 
     // MARK: - Session Restoration
