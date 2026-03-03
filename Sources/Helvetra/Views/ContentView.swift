@@ -1241,27 +1241,34 @@ struct SubscriptionView: View {
         storeService.products.first { $0.id.contains(isYearly ? "yearly" : "monthly") }
     }
 
-    /// Display price: for yearly, show monthly equivalent (marketing standard)
+    /// Display price: show the actual billed amount prominently (App Store guideline 3.1.2).
     private var displayPrice: String {
         guard let product = plusProduct else {
-            return isYearly ? "CHF 4.99/month" : "CHF 7.95/month"
+            return isYearly ? "CHF 59.95/year" : "CHF 7.95/month"
         }
         if isYearly {
-            // Hardcoded monthly equivalent (59.95/12 ≈ 4.99)
-            return "CHF 4.99/month"
+            return product.displayPrice + "/year"
         } else {
             return product.displayPrice + "/month"
         }
     }
 
-    /// For yearly, show the full yearly price in the billing note
+    /// For yearly plans, show the monthly equivalent as a subordinate note.
     private var billingNoteText: String? {
         guard isYearly else { return nil }
         if let product = plusProduct {
-            return product.displayPrice + " " + L10n.billedYearly
+            let monthlyEquivalent = product.price / 12
+            let handler = NSDecimalNumberHandler(
+                roundingMode: .down, scale: 2,
+                raiseOnExactness: false, raiseOnOverflow: false,
+                raiseOnUnderflow: false, raiseOnDivideByZero: false
+            )
+            let rounded = (monthlyEquivalent as NSDecimalNumber)
+                .rounding(accordingToBehavior: handler) as Decimal
+            let formatted = rounded.formatted(.currency(code: "CHF"))
+            return "≈ \(formatted)/month"
         }
-        // Fallback when products not loaded
-        return "CHF 59.95 " + L10n.billedYearly
+        return "≈ CHF 4.99/month"
     }
 
     var body: some View {
@@ -1477,11 +1484,9 @@ struct PlanCard: View {
                         .font(Typography.labelLarge)
                         .foregroundStyle(Colors.swissRed)
 
-                    if let note = billingNote {
-                        Text(note)
-                            .font(Typography.caption)
-                            .foregroundStyle(Colors.textSecondaryAdaptive)
-                    }
+                    Text(billingNote ?? " ")
+                        .font(Typography.caption)
+                        .foregroundStyle(billingNote != nil ? Colors.textSecondaryAdaptive : .clear)
                 }
             }
 
@@ -1702,7 +1707,7 @@ struct SettingsView: View {
         }
         .sheet(isPresented: $showSubscription) {
             SubscriptionView()
-                .presentationDetents([.medium, .large])
+                .presentationDetents([.large])
         }
         .confirmationDialog(
             L10n.deleteAccountTitle,
