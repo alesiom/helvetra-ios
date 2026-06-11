@@ -40,7 +40,15 @@ struct AuthTokens: Codable {
 private struct AuthAPIResponse: Decodable {
     let success: Bool
     let data: AuthResponseData?
-    let error: [String: String]?
+    let error: AuthErrorPayload?
+}
+
+/// Error payload from the backend envelope. Only code and message are
+/// decoded; extra fields (retry_after, ...) are ignored, so numeric extras
+/// cannot break decoding the way they did with [String: String].
+private struct AuthErrorPayload: Decodable {
+    let code: String?
+    let message: String?
 }
 
 private struct AuthResponseData: Decodable {
@@ -297,7 +305,7 @@ final class AuthService: NSObject, ObservableObject {
             if let errorResponse = try? JSONDecoder().decode(AuthAPIResponse.self, from: data),
                let error = errorResponse.error
             {
-                throw AuthError.serverError(error["detail"] ?? error["message"] ?? "Authentication failed")
+                throw AuthError.serverError(error.message ?? "Authentication failed")
             }
             throw AuthError.httpError(statusCode: httpResponse.statusCode)
         }
@@ -473,7 +481,7 @@ final class AuthService: NSObject, ObservableObject {
             if let errorResponse = try? JSONDecoder().decode(AuthAPIResponse.self, from: data),
                let error = errorResponse.error
             {
-                throw AuthError.serverError(error["detail"] ?? "Account deletion failed")
+                throw AuthError.serverError(error.message ?? "Account deletion failed")
             }
             throw AuthError.httpError(statusCode: httpResponse.statusCode)
         }

@@ -827,12 +827,20 @@ struct ContentView: View {
                                                     }
                                                 } else if let error = viewModel.errorMessage {
                                                     VStack(alignment: .leading, spacing: Spacing.xs) {
-                                                        Text(L10n.errorGeneric)
-                                                            .font(Typography.bodyMedium)
-                                                            .foregroundStyle(Colors.textPrimaryAdaptive)
-                                                        Text(error)
-                                                            .font(Typography.caption)
-                                                            .foregroundStyle(Colors.textSecondaryAdaptive)
+                                                        // Backend errors carry a real, actionable message —
+                                                        // don't bury it under a generic headline.
+                                                        if viewModel.errorIsFromBackend {
+                                                            Text(error)
+                                                                .font(Typography.bodyMedium)
+                                                                .foregroundStyle(Colors.textPrimaryAdaptive)
+                                                        } else {
+                                                            Text(L10n.errorGeneric)
+                                                                .font(Typography.bodyMedium)
+                                                                .foregroundStyle(Colors.textPrimaryAdaptive)
+                                                            Text(error)
+                                                                .font(Typography.caption)
+                                                                .foregroundStyle(Colors.textSecondaryAdaptive)
+                                                        }
                                                     }
                                                 } else if !viewModel.translatedText.isEmpty {
                                                     Text(viewModel.translatedText)
@@ -1932,6 +1940,9 @@ class TranslationViewModel: ObservableObject {
     @Published var translatedText: String = ""
     @Published var isTranslating: Bool = false
     @Published var errorMessage: String?
+    // True when errorMessage carries a real backend explanation (limits,
+    // validation) — the UI then skips the generic "something went wrong".
+    @Published var errorIsFromBackend: Bool = false
     @Published var detectedLanguage: String?
 
     var sourceLang: String = "auto"
@@ -2030,9 +2041,15 @@ class TranslationViewModel: ObservableObject {
             await UsageService.shared.fetchUsage()
         } catch let error as TranslationError {
             errorMessage = error.errorDescription
+            if case .apiError = error {
+                errorIsFromBackend = true
+            } else {
+                errorIsFromBackend = false
+            }
             translatedText = ""
         } catch {
             errorMessage = "Translation failed"
+            errorIsFromBackend = false
             translatedText = ""
         }
 
@@ -2108,11 +2125,10 @@ actor TranslationService {
         }
 
         if httpResponse.statusCode != 200 {
-            if let errorResponse = try? JSONDecoder().decode(TranslateAPIResponse.self, from: data),
-               let error = errorResponse.error {
+            if let apiError = decodeTranslationAPIError(from: data) {
                 throw TranslationError.apiError(
-                    code: error["code"] ?? "UNKNOWN",
-                    message: error["message"] ?? "Unknown error"
+                    code: apiError.code,
+                    message: apiError.message
                 )
             }
             throw TranslationError.httpError(statusCode: httpResponse.statusCode)
@@ -2146,7 +2162,67 @@ private struct TranslateAPIRequest: Encodable {
 private struct TranslateAPIResponse: Decodable {
     let success: Bool
     let data: [String: AnyCodableValue]?
-    let error: [String: String]?
+}
+
+// MARK: - API Error Decoding
+
+/// Error payload carried by backend error responses. Only code and message
+/// are decoded; extra fields (retry_after, limit, ...) are ignored, so
+/// numeric extras can no longer break decoding the way they did with the
+/// old [String: String] representation.
+private struct APIErrorPayload: Decodable {
+    let code: String?
+    let message: String?
+}
+
+/// Canonical envelope: {success: false, error: {code, message, ...}}.
+private struct ErrorEnvelopeResponse: Decodable {
+    let error: APIErrorPayload?
+}
+
+/// Legacy FastAPI shape: {detail: {code, message}} or {detail: "message"}.
+private struct DetailErrorResponse: Decodable {
+    enum Detail: Decodable {
+        case structured(APIErrorPayload)
+        case text(String)
+
+        init(from decoder: Decoder) throws {
+            let container = try decoder.singleValueContainer()
+            if let text = try? container.decode(String.self) {
+                self = .text(text)
+            } else {
+                self = .structured(try container.decode(APIErrorPayload.self))
+            }
+        }
+    }
+
+    let detail: Detail
+}
+
+/// Decode a backend error from either shape so the user sees the real
+/// message ("Weekly limit reached. Create a free account for more.")
+/// instead of a generic "Something went wrong".
+private func decodeTranslationAPIError(from data: Data) -> (code: String, message: String)? {
+    let decoder = JSONDecoder()
+
+    if let envelope = try? decoder.decode(ErrorEnvelopeResponse.self, from: data),
+       let payload = envelope.error,
+       let message = payload.message {
+        return (payload.code ?? "UNKNOWN", message)
+    }
+
+    if let legacy = try? decoder.decode(DetailErrorResponse.self, from: data) {
+        switch legacy.detail {
+        case .structured(let payload):
+            if let message = payload.message {
+                return (payload.code ?? "UNKNOWN", message)
+            }
+        case .text(let message):
+            return ("UNKNOWN", message)
+        }
+    }
+
+    return nil
 }
 
 private struct AnyCodableValue: Decodable {
